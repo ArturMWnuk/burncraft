@@ -49,7 +49,7 @@ Każde nowe sterowanie w GUI to polecenie rejestru (REQ-01-029, `executor`), tak
   - druga para (2026-11-07), usterki z testu sprzętowego: pole `alarm` znika, gdy raport stanu wyjdzie z alarmu (po `$X` z Konsoli, `$H`, resecie); rozpoznanie Two Trees z „Using machine:TTS-…” w `$I` (znaczniki producentów z alternatywami); profil z „Znajdź mój laser” z obszarem z `$130/$131`; kinematyka podłączonej maszyny z `$110/$111/$120/$121/$11` w `plan.estimate` (`kinematics_source`), Podglądzie, raporcie planu i nagłówku G-code (odświeżana po `device.settings_write`); nazwy osi A/B/C i `$28`, pozostałe rozszerzenia płyt jako „ustawienie rozszerzone producenta”; checklista kroku 9 zgodna z `cut_last = false`;
   - okno ustawień warstwy (REQ-03-032, zgłoszenie zleceniodawcy 2026-11-07; `web/src/layersettings.ts`): dwuklik na wierszu panelu Warstwy, polecenia okna `layer.settings_open {index, tab}` i `layer.settings_close`, zakładki Ogólne, Cięcie, Grawer/Skanowanie, Zaawansowane, Pod-warstwy ze wszystkimi parametrami `layer.set` i `layer.params` z §7.2.
 
-- **Etap M2 zamknięty 2026-11-07.** 227 wymagań `verified`, bez odstępstw; przegląd `docs/reviews/M2-review.md`. Ostatni przebieg pełnej macierzy (42378563274): 10 z 11 zadań zielonych. Niestabilne testy Windows ustabilizowano w `c2a8088`. Przebiegu na kodzie końcowym nie było: GitHub Actions jest zablokowany limitem wydatków, a zamknięcie bez niego to decyzja zleceniodawcy.
+- **Etap M2 zamknięty 2026-11-07.** 227 wymagań `verified`, bez odstępstw; przegląd `docs/reviews/M2-review.md`. Pełna macierz CI na kodzie końcowym (run 42384351310, repozytorium publiczne): 12 z 12 zadań success.
 
 ## Decyzje zleceniodawcy (2026-11-04)
 
