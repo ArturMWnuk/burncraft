@@ -1,0 +1,195 @@
+name: CI
+
+# Limit minut Actions (repozytorium prywatne: Windows ×2, macOS ×10) — decyzja
+# zleceniodawcy 2026-11-04 (zastępuje „Odchudź CI” z 2026-10-31):
+# - push i PR: tylko Linux x64 (Windows sprawdzany lokalnie przed każdym pushem);
+#   commity zmieniające wyłącznie dokumentację nie uruchamiają CI;
+# - pełna macierz pięciu platform, okno Tauri na 3 systemach i fuzzing: raz w tygodniu
+#   (tylko gdy od poprzedniego tygodnia były commity) oraz ręcznie przed zamknięciem etapu;
+# - nowy push przerywa poprzedni, jeszcze trwający przebieg.
+on:
+  push:
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "LICENSES/**"
+  pull_request:
+    paths-ignore:
+      - "docs/**"
+      - "**/*.md"
+      - "LICENSES/**"
+  schedule:
+    - cron: "17 2 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
+
+jobs:
+  # przebieg tygodniowy tylko wtedy, gdy w ostatnim tygodniu były commity
+  changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      run: ${{ steps.check.outputs.run }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
+      - id: check
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" != "schedule" ] || [ -n "$(git log -1 --since='8 days ago' --format=%H)" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: test (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.run == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        # REQ-19-020…024: Windows, macOS x64, macOS arm64, Linux x64, Linux arm64
+        # macos-15-intel = x64, macos-15 = arm64 (obrazy macos-13 i macos-14 wycofane)
+        os: ${{ fromJSON((github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '["windows-latest", "macos-15-intel", "macos-15", "ubuntu-24.04", "ubuntu-24.04-arm"]' || '["ubuntu-24.04"]') }}
+    runs-on: ${{ matrix.os }}
+    env:
+      # przeglądarki Playwright w katalogu objętym cache (klucz z architekturą: Linux x64 i arm64
+      # mają różne binarki, wspólny klucz dawał arm64 przeglądarki x64)
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.pw-browsers
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      # kompilacja przyrostowa zamiast od zera przy każdym przebiegu
+      - uses: Swatinem/rust-cache@v2
+      - uses: actions/cache@v4
+        with:
+          path: .pw-browsers
+          key: pw-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('web/package-lock.json') }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml
+      # serialport (transport serial, ADR 0010) wymaga libudev na Linuksie
+      - if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - name: cargo test
+        shell: bash
+        run: cargo test --workspace 2>&1 | tee cargo-test.log; exit ${PIPESTATUS[0]}
+      # REQ-19-007: test porównawczy emulatora z grbl-sim; źródła GRBL i grbl-sim pobierane
+      # tylko w CI (poza repozytorium, kod GPL nie trafia do produktu)
+      - name: grbl-sim
+        if: matrix.os == 'ubuntu-24.04'
+        shell: bash
+        run: |
+          git clone --depth 1 https://github.com/gnea/grbl.git /tmp/grbl
+          git clone --depth 1 https://github.com/grbl/grbl-sim.git /tmp/grbl/grbl/grbl-sim
+          make -C /tmp/grbl/grbl/grbl-sim new CC="gcc -fcommon -w"
+          GRBL_SIM=/tmp/grbl/grbl/grbl-sim/grbl_sim.exe cargo test -p bc-drivers --test grbl_sim_diff -- --ignored 2>&1 | tee grbl-sim-test.log; exit ${PIPESTATUS[0]}
+      - name: req-check unit tests
+        shell: bash
+        run: python -m unittest -v tools/req-check/test_req_check.py tools/i18n/test_ftl.py 2>&1 | tee py-test.log; exit ${PIPESTATUS[0]}
+      # REQ-19-013: E2E GUI (Playwright, Chromium) na frontendzie z `burncraft-cli serve`
+      # (binarkę zbudował już cargo test)
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci
+        working-directory: web
+      - run: npx playwright install --with-deps chromium
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+      - name: playwright test
+        shell: bash
+        working-directory: web
+        run: npx playwright test 2>&1 | tee ../e2e-test.log; exit ${PIPESTATUS[0]}
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-${{ matrix.os }}
+          path: web/test-results
+      # REQ-21-012: bramka zgodności z rejestrem wymagań
+      # testy okna (app/) buduje i uruchamia zadanie „app” — tu mogą nie występować w logach
+      - shell: bash
+        run: python tools/req-check/req_check.py --test-log cargo-test.log --test-log py-test.log --test-log e2e-test.log $([ -f grbl-sim-test.log ] && echo --test-log grbl-sim-test.log) --optional app/
+
+  # REQ-01-017, 021, 042: okno Tauri 2 (osobny workspace app/, ADR 0007) na Linuksie
+  # (WebKitGTK pod xvfb), Windows i macOS — w przebiegu tygodniowym i ręcznym.
+  app:
+    name: app (${{ matrix.os }})
+    needs: changes
+    if: needs.changes.outputs.run == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-24.04", "windows-latest", "macos-15"]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: app
+      - name: biblioteki systemowe Tauri (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libxdo-dev libssl-dev librsvg2-dev libudev-dev xvfb
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - run: npm ci && npm run build
+        working-directory: web
+      - run: cargo fmt --check
+        working-directory: app
+      - run: cargo clippy --all-targets -- -D warnings
+        working-directory: app
+      - name: cargo test (okno)
+        working-directory: app
+        shell: bash
+        run: |
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -a cargo test 2>&1 | tee ../app-test.log; exit ${PIPESTATUS[0]}
+          else
+            cargo test 2>&1 | tee ../app-test.log; exit ${PIPESTATUS[0]}
+          fi
+
+  # REQ-19-003…005: cargo-fuzz (libFuzzer) — tylko Linux, nightly
+  fuzz:
+    name: fuzz (${{ matrix.target }})
+    needs: changes
+    if: needs.changes.outputs.run == 'true' && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [svg_import, dxf_import, lbrn2_import]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@nightly
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-fuzz
+      - name: cargo fuzz run
+        working-directory: fuzz
+        # install-action dostarcza cargo-fuzz zbudowany dla musl — target trzeba podać jawnie
+        run: cargo fuzz run --target x86_64-unknown-linux-gnu ${{ matrix.target }} -- -max_total_time=120 -rss_limit_mb=2048 -timeout=10
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: fuzz-artifacts-${{ matrix.target }}
+          path: fuzz/artifacts

@@ -1,0 +1,15 @@
+﻿[package]
+name = "bc-doc"
+description = "BurnCraft: model dokumentu, warstwy, obiekty, historia, format .bcraft"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bc-geom.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+zip.workspace = true
+jsonschema.workspace = true
+schemars = "1"

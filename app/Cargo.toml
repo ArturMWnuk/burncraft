@@ -1,0 +1,34 @@
+[package]
+name = "burncraft-app"
+description = "BurnCraft: okno desktopowe (Tauri 2) z hostem GUI i kanałem sterowania"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+# aplikacja: GPL (ADR 0001)
+license = "GPL-3.0-or-later"
+publish = false
+
+# samodzielny projekt (poza workspace rdzenia, ADR 0007): Tauri wnosi kilkaset
+# zależności i biblioteki systemowe WebKitGTK na Linuksie — testy rdzenia
+# budują się bez nich
+[workspace]
+
+[[bin]]
+name = "burncraft"
+path = "src/main.rs"
+
+[dependencies]
+bc-host = { path = "../crates/bc-host" }
+bc-commands = { path = "../crates/bc-commands" }
+bc-mcp = { path = "../crates/bc-mcp" }
+tauri = { version = "2", features = [] }
+clap = { version = "4", features = ["derive"] }
+serde_json = "1"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dev-dependencies]
+tungstenite = "0.30"

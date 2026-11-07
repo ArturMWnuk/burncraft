@@ -1,0 +1,10 @@
+# Stan etapów (spec. §20). req-check wymaga, by wymagania etapu "closed" były verified/deviation.
+milestones:
+  M0: {status: closed, note: "zamkniety 2026-10-28; 111 verified, 1 deviation (DEV-001)"}
+  M1: {status: closed, note: "zamkniety 2026-11-03; 202 verified (162 auto, 40 recznie); DEV-002, przeniesione do M4: REQ-01-024 (DEV-003), REQ-02-072 (DEV-004); przeglad docs/reviews/M1-review.md"}
+  M2: {status: closed, note: "zamkniety 2026-11-07; 227 verified (133 auto, 80 emu, 13 recznie, 1 sprzet: Two Trees TTS-20 PRO / MKS DLC32); bez odstepstw; pelna macierz CI na kodzie koncowym pominieta (Actions zablokowane, decyzja zleceniodawcy); przeglad docs/reviews/M2-review.md"}
+  M3: {status: planned}
+  M4: {status: planned}
+  M5: {status: planned}
+  M6: {status: planned}
+  M7: {status: planned}

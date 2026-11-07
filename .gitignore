@@ -1,0 +1,7 @@
+/target
+*.bcraft.tmp
+__pycache__/
+*.log
+# próbki użytkownika w katalogu głównym — kopie w crates/bc-io/tests/fixtures
+/*.lbrn
+/*.lbrn2

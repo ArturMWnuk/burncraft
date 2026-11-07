@@ -1,0 +1,8 @@
+[package]
+name = "bc-script"
+description = "BurnCraft: API skryptowe (Python, JS/Lua) i system wtyczek."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]

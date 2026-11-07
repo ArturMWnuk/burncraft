@@ -1,0 +1,15 @@
+[package]
+name = "bc-plan"
+description = "BurnCraft: Planer ciecia: kolejnosc, optymalizacja, kerf, mostki, overscan, wypelnienia, rastry."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bc-geom.workspace = true
+bc-doc.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+schemars = "1"

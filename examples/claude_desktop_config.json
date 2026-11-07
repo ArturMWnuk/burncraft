@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "burncraft": {
+      "command": "C:\\Users\\YOU\\Documents\\Claude\\BurnCraft\\target\\release\\burncraft-cli.exe",
+      "args": ["mcp", "--audit-log", "C:\\Users\\YOU\\AppData\\Local\\BurnCraft\\mcp-audit.jsonl"]
+    }
+  }
+}

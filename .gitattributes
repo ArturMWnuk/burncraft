@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.png binary
+# dane z fuzzera — bajt w bajt
+crates/bc-io/tests/fixtures/fuzz/* binary
+# pliki golden kompilatorów (REQ-19-006) — bajt w bajt
+crates/bc-drivers/tests/golden/* -text

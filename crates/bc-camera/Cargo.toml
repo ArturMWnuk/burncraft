@@ -1,0 +1,8 @@
+[package]
+name = "bc-camera"
+description = "BurnCraft: Kamery, kalibracja obiektywu, wyrownanie, AprilTag/ArUco."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]

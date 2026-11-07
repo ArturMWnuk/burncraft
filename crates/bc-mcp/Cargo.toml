@@ -1,0 +1,24 @@
+[package]
+name = "bc-mcp"
+description = "BurnCraft: serwer MCP (JSON-RPC 2.0 po stdio i Streamable HTTP), zasoby z subskrypcjami, prompty, polityka bezpieczenstwa, dziennik audytu"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bc-geom.workspace = true
+bc-doc.workspace = true
+bc-sim.workspace = true
+bc-plan.workspace = true
+bc-commands.workspace = true
+bc-drivers.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+schemars = "1"
+base64.workspace = true
+tracing.workspace = true
+# Streamable HTTP (ADR 0012): axum i tokio jak w bc-host, futures-core (trait Stream dla SSE)
+axum.workspace = true
+tokio.workspace = true
+futures-core = "0.3"
+getrandom.workspace = true

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BurnCraft</title>
+    <script>
+      // token sesji wstawia bc-host przy serwowaniu (ADR 0007)
+      window.BURNCRAFT_TOKEN = "%BURNCRAFT_TOKEN%";
+    </script>
+  </head>
+  <body>
+    <div id="app">
+      <!-- strefy dokowania pasków narzędzi (REQ-03-031) -->
+      <header id="dock-top" class="dock dock-h"></header>
+      <div id="dock-left" class="dock dock-v"></div>
+      <div id="dock-right" class="dock dock-v"></div>
+      <div id="dock-bottom" class="dock dock-h"></div>
+      <nav id="tabs" aria-label="Dokumenty"></nav>
+      <main id="workspace">
+        <canvas id="ruler-top" class="ruler" aria-hidden="true"></canvas>
+        <canvas id="ruler-left" class="ruler" aria-hidden="true"></canvas>
+        <div id="corner"></div>
+        <canvas id="canvas" tabindex="0" aria-label="Obszar roboczy"></canvas>
+      </main>
+      <aside id="panels"></aside>
+      <footer id="status" role="status"></footer>
+    </div>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

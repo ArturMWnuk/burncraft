@@ -1,0 +1,32 @@
+[package]
+name = "bc-cli"
+description = "burncraft-cli: operacje wsadowe i serwer MCP BurnCraft"
+version.workspace = true
+edition.workspace = true
+# aplikacja: GPL (ADR 0001)
+license = "GPL-3.0-or-later"
+
+[[bin]]
+name = "burncraft-cli"
+path = "src/main.rs"
+
+[dependencies]
+bc-doc.workspace = true
+bc-commands.workspace = true
+bc-mcp.workspace = true
+bc-host.workspace = true
+tungstenite.workspace = true
+bc-geom.workspace = true
+bc-text.workspace = true
+bc-image.workspace = true
+bc-io.workspace = true
+bc-plan.workspace = true
+bc-sim.workspace = true
+bc-drivers.workspace = true
+bc-camera.workspace = true
+bc-materials.workspace = true
+bc-script.workspace = true
+serde_json.workspace = true
+clap.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true

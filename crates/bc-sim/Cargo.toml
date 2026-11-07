@@ -1,0 +1,13 @@
+[package]
+name = "bc-sim"
+description = "BurnCraft: podglad projektu i sciezek, symulacja, estymacja czasu"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bc-geom.workspace = true
+bc-doc.workspace = true
+bc-plan.workspace = true
+tiny-skia.workspace = true
+thiserror.workspace = true

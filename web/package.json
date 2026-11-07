@@ -1,0 +1,19 @@
+{
+  "name": "burncraft-web",
+  "private": true,
+  "version": "0.1.0",
+  "description": "BurnCraft — frontend GUI (TypeScript + WebGL2), serwowany przez bc-host",
+  "license": "GPL-3.0-or-later",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "typescript": "5.6.3",
+    "vite": "6.4.5"
+  }
+}

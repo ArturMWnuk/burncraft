@@ -1,0 +1,23 @@
+[package]
+name = "bc-drivers"
+description = "BurnCraft: Sterowniki laserow (trait Driver), transporty i kompilatory plikow maszynowych (G-code)."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+bc-geom.workspace = true
+bc-doc.workspace = true
+bc-plan.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+sha2.workspace = true
+serde_json.workspace = true
+schemars = "1"
+tungstenite.workspace = true
+serialport = "4"
+
+[dev-dependencies]
+bc-geom.workspace = true
+tiny-skia.workspace = true
+bc-sim.workspace = true

@@ -1,0 +1,10 @@
+[package]
+name = "bc-geom"
+description = "BurnCraft: geometria 2D (sciezki Beziera, transformacje, bbox, splaszczanie)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+kurbo.workspace = true
+clipper2-rust.workspace = true

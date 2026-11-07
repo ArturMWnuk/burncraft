@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://burncraft.invalid/schemas/document/5.json",
+  "title": "BurnCraft document.json (schemat 5)",
+  "description": "Zawartość pliku document.json w archiwum .bcraft. Jednostki: mm, oś Y w górę (ADR 0003).",
+  "type": "object",
+  "required": ["schema", "name", "units", "workspace", "layers", "objects", "next_id"],
+  "properties": {
+    "schema": { "const": 5 },
+    "name": { "type": "string" },
+    "units": { "const": "mm" },
+    "workspace": {
+      "type": "object",
+      "required": ["width", "height"],
+      "properties": {
+        "width": { "type": "number", "exclusiveMinimum": 0 },
+        "height": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "layers": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": { "$ref": "#/$defs/layer" }
+    },
+    "objects": { "type": "array", "items": { "$ref": "#/$defs/object" } },
+    "next_id": { "type": "integer", "minimum": 1 },
+    "plan": { "type": "object", "description": "Ustawienia planu ciecia (ADR 0009); typy pol sprawdza bc-doc (PlanSettings)" },
+    "start": { "type": "object", "description": "Ustawienia startu zadania (REQ-10-006, ADR 0011); typy pol sprawdza bc-doc (StartSettings)" },
+    "gcode": { "type": "object", "description": "Ustawienia kompilatora G-code (ADR 0011); typy pol sprawdza bc-doc (GcodeSettings)" }
+  },
+  "$defs": {
+    "array_layout": {
+      "type": "object",
+      "required": ["kind"],
+      "oneOf": [
+        {
+          "properties": {
+            "kind": { "const": "grid" },
+            "columns": { "type": "integer", "minimum": 1 }, "rows": { "type": "integer", "minimum": 1 },
+            "dx": { "type": "number" }, "dy": { "type": "number" }, "row_shift": { "type": "number" }
+          },
+          "required": ["kind", "columns", "rows", "dx", "dy"]
+        },
+        {
+          "properties": {
+            "kind": { "const": "circular" },
+            "count": { "type": "integer", "minimum": 2 },
+            "center": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+            "angle": { "type": "number" }, "rotate_copies": { "type": "boolean" }
+          },
+          "required": ["kind", "count", "center"]
+        }
+      ]
+    },
+    "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+    "layer": {
+      "type": "object",
+      "required": ["index", "color", "name", "mode", "speed", "power_max", "power_min", "passes", "output", "show", "air_assist"],
+      "properties": {
+        "index": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "role": { "enum": ["cut", "frame", "helper"] },
+        "color": { "$ref": "#/$defs/color" },
+        "name": { "type": "string" },
+        "mode": { "enum": ["line", "fill", "offset_fill", "image", "fill_line", "flood_fill"] },
+        "speed": { "type": "number", "exclusiveMinimum": 0 },
+        "power_max": { "type": "number", "minimum": 0, "maximum": 100 },
+        "power_min": { "type": "number", "minimum": 0, "maximum": 100 },
+        "passes": { "type": "integer", "minimum": 1 },
+        "output": { "type": "boolean" },
+        "show": { "type": "boolean" },
+        "air_assist": { "type": "boolean" },
+        "params": { "type": "object", "description": "Parametry ciecia z par. 7.2 (ADR 0009); typy pol sprawdza bc-doc (LayerParams)" }
+      }
+    },
+    "transform": {
+      "type": "array",
+      "items": { "type": "number" },
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "object": {
+      "type": "object",
+      "required": ["id", "type", "layer", "visible", "locked", "transform"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "name": { "type": ["string", "null"] },
+        "layer": { "type": "integer", "minimum": 0, "maximum": 255 },
+        "visible": { "type": "boolean" },
+        "locked": { "type": "boolean" },
+        "lock_size": { "type": "boolean" },
+        "note": { "type": ["string", "null"] },
+        "priority": { "type": "integer" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "helper": { "type": "boolean" },
+        "tabs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["at"],
+            "properties": {
+              "at": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+              "size": { "type": "number", "exclusiveMinimum": 0 }
+            }
+          }
+        },
+        "transform": { "$ref": "#/$defs/transform" },
+        "type": { "enum": ["path", "rect", "ellipse", "polygon", "star", "arc", "group", "array", "clone"] }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "type": { "const": "path" } } },
+          "then": { "required": ["d"], "properties": { "d": { "type": "string" } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "rect" } } },
+          "then": {
+            "required": ["x", "y", "w", "h", "radius"],
+            "properties": {
+              "x": { "type": "number" }, "y": { "type": "number" },
+              "w": { "type": "number", "exclusiveMinimum": 0 },
+              "h": { "type": "number", "exclusiveMinimum": 0 },
+              "radius": { "type": "number", "minimum": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "ellipse" } } },
+          "then": {
+            "required": ["cx", "cy", "rx", "ry"],
+            "properties": {
+              "cx": { "type": "number" }, "cy": { "type": "number" },
+              "rx": { "type": "number", "exclusiveMinimum": 0 },
+              "ry": { "type": "number", "exclusiveMinimum": 0 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "polygon" } } },
+          "then": {
+            "required": ["cx", "cy", "r", "sides", "rotation"],
+            "properties": {
+              "cx": { "type": "number" }, "cy": { "type": "number" },
+              "r": { "type": "number", "exclusiveMinimum": 0 },
+              "sides": { "type": "integer", "minimum": 3 },
+              "rotation": { "type": "number" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "star" } } },
+          "then": {
+            "required": ["cx", "cy", "r_outer", "r_inner", "points", "rotation"],
+            "properties": {
+              "cx": { "type": "number" }, "cy": { "type": "number" },
+              "r_outer": { "type": "number", "exclusiveMinimum": 0 },
+              "r_inner": { "type": "number", "exclusiveMinimum": 0 },
+              "r_middle": { "type": ["number", "null"], "exclusiveMinimum": 0 },
+              "points": { "type": "integer", "minimum": 2 },
+              "rotation": { "type": "number" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "arc" } } },
+          "then": {
+            "required": ["cx", "cy", "r", "start", "sweep"],
+            "properties": {
+              "cx": { "type": "number" }, "cy": { "type": "number" },
+              "r": { "type": "number", "exclusiveMinimum": 0 },
+              "start": { "type": "number" },
+              "sweep": { "type": "number", "minimum": -360, "maximum": 360 }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "array" } } },
+          "then": {
+            "required": ["children", "layout"],
+            "properties": {
+              "children": { "type": "array", "items": { "$ref": "#/$defs/object" } },
+              "layout": { "$ref": "#/$defs/array_layout" }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "type": { "const": "clone" } } },
+          "then": { "required": ["source"], "properties": { "source": { "type": "integer", "minimum": 1 } } }
+        },
+        {
+          "if": { "properties": { "type": { "const": "group" } } },
+          "then": {
+            "required": ["children"],
+            "properties": { "children": { "type": "array", "items": { "$ref": "#/$defs/object" } } }
+          }
+        }
+      ]
+    }
+  }
+}

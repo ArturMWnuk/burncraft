@@ -1,0 +1,66 @@
+[workspace]
+resolver = "2"
+exclude = ["fuzz", "app"]
+members = [
+    "crates/bc-geom",
+    "crates/bc-doc",
+    "crates/bc-text",
+    "crates/bc-image",
+    "crates/bc-io",
+    "crates/bc-plan",
+    "crates/bc-sim",
+    "crates/bc-drivers",
+    "crates/bc-camera",
+    "crates/bc-materials",
+    "crates/bc-commands",
+    "crates/bc-mcp",
+    "crates/bc-script",
+    "crates/bc-cli",
+    "crates/bc-host",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.88"
+# Rdzeń i biblioteki: MIT OR Apache-2.0; aplikacje (bc-cli, app/): GPL-3.0-or-later — patrz docs/adr/0001-license.md
+license = "MIT OR Apache-2.0"
+repository = "https://example.invalid/burncraft"
+
+[workspace.dependencies]
+bc-geom = { path = "crates/bc-geom" }
+bc-doc = { path = "crates/bc-doc" }
+bc-text = { path = "crates/bc-text" }
+bc-image = { path = "crates/bc-image" }
+bc-io = { path = "crates/bc-io" }
+bc-plan = { path = "crates/bc-plan" }
+bc-sim = { path = "crates/bc-sim" }
+bc-drivers = { path = "crates/bc-drivers" }
+bc-camera = { path = "crates/bc-camera" }
+bc-materials = { path = "crates/bc-materials" }
+bc-commands = { path = "crates/bc-commands" }
+bc-mcp = { path = "crates/bc-mcp" }
+bc-script = { path = "crates/bc-script" }
+bc-host = { path = "crates/bc-host" }
+
+kurbo = { version = "0.13", features = ["serde"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "2"
+zip = { version = "9", default-features = false, features = ["deflate"] }
+jsonschema = { version = "0.60", default-features = false }
+tiny-skia = "0.12"
+base64 = "0.22"
+clap = { version = "4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+sha2 = "0.10"
+tempfile = "3"
+clipper2-rust = "1.2"
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net", "sync", "time"] }
+axum = { version = "0.8", features = ["ws"] }
+tungstenite = "0.30"
+getrandom = "0.4"
+
+[profile.release]
+lto = "thin"
