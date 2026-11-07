@@ -160,7 +160,7 @@
 | REQ-02-092 | M1 | verified | `crates/bc-io/tests/import_export.rs::req_02_092_lbrn2_user_sample`<br>`crates/bc-io/tests/lbrn_samples.rs::req_02_092_ellipse`<br>`crates/bc-io/tests/lbrn_samples.rs::req_02_092_polygon_ellipse_inscribed_and_mirrored`<br>`crates/bc-io/tests/lbrn_samples.rs::req_02_092_regular_polygon_stays_parametric`<br>`crates/bc-io/tests/lbrn_samples.rs::req_02_092_path_with_beziers_and_y_up`<br>`crates/bc-io/tests/lbrn_samples.rs::req_02_092_text_imported_as_curves_with_warning`<br>`crates/bc-io/tests/lbrn_samples.rs::req_02_092_group_with_children_and_world_backup_path` |  |
 | REQ-02-093 | M4 | todo |  |  |
 | REQ-02-094 | M4 | todo |  |  |
-| REQ-02-095 | M3 | todo |  |  |
+| REQ-02-095 | M4 | todo |  |  |
 | REQ-02-096 | M4 | todo |  |  |
 | REQ-02-097 | M4 | todo |  |  |
 | REQ-02-098 | M4 | todo |  |  |
@@ -825,7 +825,7 @@
 | REQ-13-118 | M6 | todo |  |  |
 | REQ-13-119 | M3 | todo |  |  |
 | REQ-13-120 | M3 | todo |  |  |
-| REQ-13-121 | M3 | todo |  |  |
+| REQ-13-121 | M7 | todo |  |  |
 | REQ-13-122 | M3 | todo |  |  |
 | REQ-13-123 | M3 | todo |  |  |
 | REQ-13-124 | M3 | todo |  |  |
@@ -1100,7 +1100,7 @@
 | REQ-19-015 | M6 | todo |  |  |
 | REQ-19-016 | M3 | todo | `crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic` |  |
 | REQ-19-017 | M2 | verified |  | docs/procedures/M2-hardware-grbl.md |
-| REQ-19-018 | M3 | todo |  |  |
+| REQ-19-018 | M7 | todo |  |  |
 | REQ-19-019 | M5 | todo |  |  |
 | REQ-19-020 | M0 | verified |  | docs/procedures/M0-manual-checks.md |
 | REQ-19-021 | M0 | verified |  | docs/procedures/M0-manual-checks.md |

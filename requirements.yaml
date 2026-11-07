@@ -162,7 +162,7 @@ requirements:
   - {id: "REQ-02-092", sec: "2.4", pri: "MUST", ms: "M1", verify: "auto", status: "verified", text: "Import .lbrn2", note: "zweryfikowane na plikach uzytkownika: CutSetting, Rect, Ellipse, Polygon, Path, Group, Text (jako krzywe z BackupPath); Bitmap i inne typy — po dostarczeniu probek"}
   - {id: "REQ-02-093", sec: "2.4", pri: "MUST", ms: "M4", verify: "auto", status: "todo", text: "Import bibliotek materialow .clb"}
   - {id: "REQ-02-094", sec: "2.4", pri: "MUST", ms: "M4", verify: "auto", status: "todo", text: "Import bibliotek grafik .lbart"}
-  - {id: "REQ-02-095", sec: "2.4", pri: "MUST", ms: "M3", verify: "auto", status: "todo", text: "Import pakietow ustawien urzadzen .lbzip"}
+  - {id: "REQ-02-095", sec: "2.4", pri: "MUST", ms: "M4", verify: "auto", status: "todo", text: "Import pakietow ustawien urzadzen .lbzip", note: "przesuniete z M3 do M4 razem z formatami .clb/.lbart czekajacymi na pliki przykladowe (DEV-006)", deviation: "DEV-006"}
   - {id: "REQ-02-096", sec: "2.4", pri: "MUST", ms: "M4", verify: "auto", status: "todo", text: "Import PNG"}
   - {id: "REQ-02-097", sec: "2.4", pri: "MUST", ms: "M4", verify: "auto", status: "todo", text: "Import JPG"}
   - {id: "REQ-02-098", sec: "2.4", pri: "MUST", ms: "M4", verify: "auto", status: "todo", text: "Import BMP"}
@@ -827,7 +827,7 @@ requirements:
   - {id: "REQ-13-118", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "xTool P2: kamera i czujnik wysokosci", postulat: 26}
   - {id: "REQ-13-119", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6442G"}
   - {id: "REQ-13-120", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6442S"}
-  - {id: "REQ-13-121", sec: "13.3", pri: "MUST", ms: "M3", verify: "hw", status: "todo", text: "Ruida RDC6445G"}
+  - {id: "REQ-13-121", sec: "13.3", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Ruida RDC6445G", note: "sterownik i profil modelu w M3.2 (emulator); test sprzetowy przesuniety do M7 - brak dostepu do maszyny (DEV-005)", deviation: "DEV-005"}
   - {id: "REQ-13-122", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6445GZ"}
   - {id: "REQ-13-123", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6332G"}
   - {id: "REQ-13-124", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6332M"}
@@ -1102,7 +1102,7 @@ requirements:
   - {id: "REQ-19-015", sec: "19", pri: "MUST", ms: "M6", verify: "auto", status: "todo", text: "Testy MCP: start_job bez tokenu -> odmowa"}
   - {id: "REQ-19-016", sec: "19", pri: "MUST", ms: "M3", verify: "hw", status: "todo", text: "Testy sprzetowe z checklista: K40 M2 Nano"}
   - {id: "REQ-19-017", sec: "19", pri: "MUST", ms: "M2", verify: "hw", status: "verified", text: "Testy sprzetowe: GRBL diodowy", note: "test zleceniodawcy 2026-11-05: Two Trees TTS-20 PRO, MKS DLC32 V4.00, GRBL 1.1h, CH340 COM3; 14/16 punktow tak (polaczenie, Konsola, bazowanie, alarm i $X, jog XY, pozycje, znacznik glowicy, podglad, ramka, ciecie 30x30 i fi10, grawer, pauza/wznowienie, Stop z ALARM:3, start od miejsca), pominiete: os Z (brak), odlaczenie USB (decyzja zleceniodawcy); 5 usterek poprawionych w M2.5 (alarm po $X/$H, odmiana Two Trees, obszar z $130/$131, kinematyka maszyny w estymacji, checklista kroku 9); wyniki w docs/hardware-matrix.md", procedure: "docs/procedures/M2-hardware-grbl.md"}
-  - {id: "REQ-19-018", sec: "19", pri: "MUST", ms: "M3", verify: "hw", status: "todo", text: "Testy sprzetowe: Ruida RDC6445"}
+  - {id: "REQ-19-018", sec: "19", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Testy sprzetowe: Ruida RDC6445", note: "przesuniete z M3 do M7 - brak dostepu do maszyny; checklista powstaje w M3 (DEV-005)", deviation: "DEV-005"}
   - {id: "REQ-19-019", sec: "19", pri: "MUST", ms: "M5", verify: "hw", status: "todo", text: "Testy sprzetowe: galvo LMCV4"}
   - {id: "REQ-19-020", sec: "19", pri: "MUST", ms: "M0", verify: "auto", status: "verified", text: "CI: Windows", procedure: "docs/procedures/M0-manual-checks.md"}
   - {id: "REQ-19-021", sec: "19", pri: "MUST", ms: "M0", verify: "auto", status: "verified", text: "CI: macOS x64", procedure: "docs/procedures/M0-manual-checks.md"}

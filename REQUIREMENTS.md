@@ -95,11 +95,11 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | M0 | 112 | 112 | closed |
 | M1 | 202 | 202 | closed |
 | M2 | 227 | 227 | closed |
-| M3 | 70 | 0 | planned |
-| M4 | 169 | 0 | planned |
+| M3 | 67 | 0 | planned |
+| M4 | 170 | 0 | planned |
 | M5 | 108 | 0 | planned |
 | M6 | 167 | 0 | planned |
-| M7 | 85 | 0 | planned |
+| M7 | 87 | 0 | planned |
 | LATER | 4 | 0 | planned |
 
 ### Pełna lista wymagań
@@ -277,7 +277,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-02-092 | 2.4 | MUST | M1 | auto | verified | Import .lbrn2 |
 | REQ-02-093 | 2.4 | MUST | M4 | auto | todo | Import bibliotek materialow .clb |
 | REQ-02-094 | 2.4 | MUST | M4 | auto | todo | Import bibliotek grafik .lbart |
-| REQ-02-095 | 2.4 | MUST | M3 | auto | todo | Import pakietow ustawien urzadzen .lbzip |
+| REQ-02-095 | 2.4 | MUST | M4 | auto | todo | Import pakietow ustawien urzadzen .lbzip |
 | REQ-02-096 | 2.4 | MUST | M4 | auto | todo | Import PNG |
 | REQ-02-097 | 2.4 | MUST | M4 | auto | todo | Import JPG |
 | REQ-02-098 | 2.4 | MUST | M4 | auto | todo | Import BMP |
@@ -997,7 +997,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-118 | 13.3 | MUST | M6 | emu | todo | xTool P2: kamera i czujnik wysokosci [POSTULAT 26] |
 | REQ-13-119 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6442G |
 | REQ-13-120 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6442S |
-| REQ-13-121 | 13.3 | MUST | M3 | hw | todo | Ruida RDC6445G |
+| REQ-13-121 | 13.3 | MUST | M7 | hw | todo | Ruida RDC6445G |
 | REQ-13-122 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6445GZ |
 | REQ-13-123 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6332G |
 | REQ-13-124 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6332M |
@@ -1302,7 +1302,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-19-015 | 19 | MUST | M6 | auto | todo | Testy MCP: start_job bez tokenu -> odmowa |
 | REQ-19-016 | 19 | MUST | M3 | hw | todo | Testy sprzetowe z checklista: K40 M2 Nano |
 | REQ-19-017 | 19 | MUST | M2 | hw | verified | Testy sprzetowe: GRBL diodowy |
-| REQ-19-018 | 19 | MUST | M3 | hw | todo | Testy sprzetowe: Ruida RDC6445 |
+| REQ-19-018 | 19 | MUST | M7 | hw | todo | Testy sprzetowe: Ruida RDC6445 |
 | REQ-19-019 | 19 | MUST | M5 | hw | todo | Testy sprzetowe: galvo LMCV4 |
 | REQ-19-020 | 19 | MUST | M0 | auto | verified | CI: Windows |
 | REQ-19-021 | 19 | MUST | M0 | auto | verified | CI: macOS x64 |
