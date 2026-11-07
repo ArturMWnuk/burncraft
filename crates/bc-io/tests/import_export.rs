@@ -677,7 +677,7 @@ fn req_02_092_lbrn2_user_sample() {
 
 #[test]
 fn lbrn2_unknown_shapes_are_reported_not_guessed() {
-    let s = br#"<?xml version="1.0"?><LightBurnProject AppVersion="2.0.05" FormatVersion="1">
+    let s = br#"<?xml version="1.0"?><LightBurnProject FormatVersion="1">
 <CutSetting type="Cut"><index Value="0"/><name Value="C00"/><maxPower Value="20"/><speed Value="100"/></CutSetting>
 <Shape Type="Spiral" CutIndex="0"><XForm>1 0 0 1 0 0</XForm></Shape>
 <Shape Type="Rect" CutIndex="0" W="10" H="10" Cr="2"><XForm>1 0 0 1 5 5</XForm></Shape></LightBurnProject>"#;

@@ -1,5 +1,6 @@
-//! Próbki `.lbrn`/`.lbrn2` od użytkownika (AppVersion 2.0.05): .lbrn2 (FormatVersion 1)
-//! i .lbrn (FormatVersion 0) — ADR 0008, clean-room.
+//! Próbki `.lbrn2` (FormatVersion 1) i `.lbrn` (FormatVersion 0) — ADR 0008, clean-room.
+//! Pliki generuje `tools/fixtures/gen_lbrn_samples.py`: kształty i wymiary z prób użytkownika,
+//! kontury napisu własnym krojem blokowym.
 
 use bc_doc::{Document, Kind};
 use bc_geom::Rect;

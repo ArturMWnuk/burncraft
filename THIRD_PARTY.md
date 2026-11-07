@@ -44,8 +44,8 @@ Pełna lista zależności przechodnich: `cargo tree --workspace`. Przed wydaniem
 
 | Plik | Pochodzenie | Użycie |
 |---|---|---|
-| `crates/bc-io/tests/fixtures/plik_przykladowy.lbrn2` | dostarczony przez użytkownika (plik `.lbrn2`, AppVersion 2.0.05), 2026-10-28 | analiza formatu `.lbrn2` (CutSetting, Shape Rect, XForm), test REQ-02-092 |
-| `crates/bc-io/tests/fixtures/{elipsa,hex,krzywe,text,grupa}.{lbrn,lbrn2}` | dostarczone przez użytkownika (pliki `.lbrn`/`.lbrn2`, AppVersion 2.0.05), 2026-10-29 | Ellipse, Polygon, Path (VertList/PrimList i V/P), Text (BackupPath), Group; FormatVersion 0 i 1; testy REQ-02-091/092 |
+| pliki `.lbrn`/`.lbrn2` dostarczone przez użytkownika (2026-10-28 i 2026-10-29) | prywatne, poza repozytorium | analiza formatu: CutSetting, Shape (Rect, Ellipse, Polygon, Path z VertList/PrimList i V/P, Text z BackupPath, Group), XForm; FormatVersion 0 i 1 |
+| `crates/bc-io/tests/fixtures/{plik_przykladowy,elipsa,hex,krzywe,text,grupa}.lbrn*`, `fuzz/corpus/lbrn2_import/seed-rects.lbrn2` | własne, generowane przez `tools/fixtures/gen_lbrn_samples.py` (2026-11-07) | tylko elementy czytane przez importer; wymiary i położenia kształtów z prób użytkownika, kontury napisu własnym krojem blokowym; testy REQ-02-091/092 |
 
 ## Źródła wiedzy o protokołach (do wykorzystania od M2/M3)
 

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightBurnProject FormatVersion="1">
+    <CutSetting type="Cut">
+        <index Value="0"/>
+        <name Value="C00"/>
+        <maxPower Value="20"/>
+        <speed Value="100"/>
+    </CutSetting>
+    <CutSetting type="Cut">
+        <index Value="1"/>
+        <name Value="C01"/>
+        <maxPower Value="20"/>
+        <speed Value="100"/>
+    </CutSetting>
+    <CutSetting type="Cut">
+        <index Value="2"/>
+        <name Value="C02"/>
+        <maxPower Value="20"/>
+        <speed Value="100"/>
+    </CutSetting>
+    <Shape Type="Rect" CutIndex="2" W="55" H="39" Cr="0">
+        <XForm>1 0 0 1 169.5 122</XForm>
+    </Shape>
+    <Shape Type="Rect" CutIndex="0" W="62" H="44" Cr="0">
+        <XForm>1 0 0 1 169.5 122</XForm>
+    </Shape>
+    <Shape Type="Rect" CutIndex="1" W="231" H="102" Cr="0">
+        <XForm>1 0 0 1 169.5 122</XForm>
+    </Shape>
+</LightBurnProject>

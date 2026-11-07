@@ -1,8 +1,8 @@
 //! Import projektów `.lbrn2` (FormatVersion 1) i `.lbrn` (FormatVersion 0)
 //! — clean-room, ADR 0008.
 //!
-//! Format ustalony wyłącznie z plików dostarczonych przez użytkownika
-//! (`tests/fixtures/*.lbrn*`, AppVersion 2.0.05):
+//! Format ustalony wyłącznie z plików dostarczonych przez użytkownika (prywatnych; w testach
+//! są ich własne odpowiedniki z `tools/fixtures/gen_lbrn_samples.py`):
 //! - `CutSetting`: `index`, `name`, `maxPower`, `minPower`, `speed` (atrybut `Value`),
 //! - każdy `Shape` ma `CutIndex` i `XForm` = macierz `a b c d e f` (oś Y w górę — potwierdzone
 //!   konturem litery „L” w `text` i miniaturami `krzywe`/`hex`),

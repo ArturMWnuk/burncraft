@@ -39,7 +39,7 @@ Domyślnie import tworzy jedną grupę (jak w typowym CAD), a opcja `group: fals
 
 ### Format `.lbrn2` / `.lbrn` (clean-room)
 
-- Implementacja wyłącznie na podstawie plików dostarczonych przez użytkownika (AppVersion 2.0.05): `plik_przykladowy.lbrn2` oraz `elipsa`, `hex`, `krzywe`, `text`, `grupa` w obu formatach (`tests/fixtures/`).
+- Implementacja wyłącznie na podstawie plików dostarczonych przez użytkownika: `plik_przykladowy.lbrn2` oraz `elipsa`, `hex`, `krzywe`, `text`, `grupa` w obu formatach. Od otwarcia repozytorium (2026-11-07) w `tests/fixtures/` są własne odpowiedniki tych plików z `tools/fixtures/gen_lbrn_samples.py`: te same kształty i wymiary, tylko elementy czytane przez importer, bez miniatur i metadanych, a napis ma kontury własnego kroju blokowego. Oryginalne pliki zostały prywatne.
 - `.lbrn2` (`FormatVersion="1"`) i `.lbrn` (`FormatVersion="0"`) mają tę samą strukturę. Różni się tylko zapis ścieżek: zwięzły `VertList`/`PrimList` w `.lbrn2`, elementy `<V>`/`<P>` w `.lbrn`. Test sprawdza, że oba dają identyczną geometrię.
 - Obsługiwane (zweryfikowane na plikach):
   - `CutSetting` (index, name, maxPower, minPower, speed),
@@ -48,7 +48,7 @@ Domyślnie import tworzy jedną grupę (jak w typowym CAD), a opcja `group: fals
   - `Path` (uchwyty c0 = wychodzący, c1 = wchodzący; `L`/`B`; zamknięcie, gdy prymityw wraca do początku podścieżki),
   - `Group` (dzieci z `XForm` względnym wobec grupy),
   - `Text` → kontury z `BackupPath` jako ścieżka, z ostrzeżeniem (edycja tekstu od M4). `XForm` w `BackupPath` jest **bezwzględny**, co wynika z porównania `grupa` i `text`.
-- **Oś Y w górę** — potwierdzone konturem litery „L” i miniaturami (`krzywe`, `hex`, `grupa`). Render BurnCraft pliku `grupa.lbrn2` pokrywa się z miniaturą zapisaną w tym pliku.
+- **Oś Y w górę** — potwierdzone konturem litery „L” i miniaturami (`krzywe`, `hex`, `grupa`). Render BurnCraft pliku `grupa.lbrn2` od użytkownika pokrył się z miniaturą zapisaną w tym pliku (2026-10-29).
 - Inne typy (np. obrazy `Bitmap`) są pomijane z ostrzeżeniem, bez zgadywania formatu. Kolejne typy dochodzą wraz z próbkami.
 - Projekt otwiera się jako nowy dokument bez ścieżki, więc zapis nie nadpisze oryginału. Można go też importować do bieżącego dokumentu.
 
