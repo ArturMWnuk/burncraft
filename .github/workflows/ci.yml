@@ -78,6 +78,9 @@ jobs:
       # serialport (transport serial, ADR 0010) wymaga libudev na Linuksie
       - if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libudev-dev
+      # REQ-13-021: składnia reguł udev dla laserów USB (systemd >= 254: udevadm verify)
+      - if: runner.os == 'Linux'
+        run: udevadm verify --no-style packaging/linux/99-burncraft.rules
       - run: cargo fmt --all --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - name: cargo test

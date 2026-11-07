@@ -232,6 +232,8 @@ enum Cmd {
         #[arg(long)]
         speed: Option<f64>,
     },
+    /// Reguły udev dla laserów USB (Linux): burncraft-cli udev | sudo tee /etc/udev/rules.d/99-burncraft.rules
+    Udev,
     Version,
 }
 
@@ -903,6 +905,10 @@ fn main() -> ExitCode {
             use std::io::Write;
             let _ = std::io::stdout().flush();
             let _ = bc_drivers::transport::serve_tcp(listener, emu).join();
+            ExitCode::SUCCESS
+        }
+        Cmd::Udev => {
+            print!("{}", bc_drivers::usb::udev_rules());
             ExitCode::SUCCESS
         }
         Cmd::Version => {

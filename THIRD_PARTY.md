@@ -29,6 +29,7 @@ Wymaganie REQ-00-019: każde źródło wiedzy i każda biblioteka. Zasada clean-
 | grbl-sim, GRBL | — | GPL-3.0 | tylko CI na Linuksie: budowane ze źródeł w trakcie testu porównawczego z emulatorem (REQ-19-007); nie trafiają do repozytorium ani produktu |
 | getrandom | 0.4 | MIT OR Apache-2.0 | losowy token sesji kanału (bc-host), identyfikator sesji MCP HTTP (bc-mcp) |
 | futures-core | 0.3 | MIT OR Apache-2.0 | trait `Stream` strumienia SSE (bc-mcp, ADR 0012); zależność axum, bez nowego pobrania |
+| nusb | 0.2.9 | MIT OR Apache-2.0 | transport USB bulk, lista urządzeń USB, sterownik urządzenia na Windows (bc-drivers, ADR 0013); czysty Rust, bez libusb; zgoda zleceniodawcy 2026-11-07 |
 
 ### Frontend `web/` (tylko narzędzia budowania i testów — nic z nich nie trafia do kodu aplikacji poza wynikiem kompilacji TypeScript)
 
@@ -39,6 +40,18 @@ Wymaganie REQ-00-019: każde źródło wiedzy i każda biblioteka. Zasada clean-
 | @playwright/test | 1.64 | Apache-2.0 | testy E2E GUI (REQ-19-013) |
 
 Pełna lista zależności przechodnich: `cargo tree --workspace`. Przed wydaniem 1.0 trzeba wygenerować raport licencji (np. `cargo about`).
+
+## Źródła wiedzy o protokołach (REQ-00-018, ADR 0013)
+
+Otwarte projekty służą wyłącznie jako źródło wiedzy o zachowaniu protokołu; ich kod nie jest kopiowany. Każdy fakt ma w kodzie odnośnik do źródła, a niepotwierdzony na sprzęcie — `// UNVERIFIED:`. Licencję źródła sprawdza się przy jego pierwszym użyciu.
+
+| Źródło | Licencja | Wiedza | Miejsce w kodzie |
+|---|---|---|---|
+| specyfikacja BurnCraft §13.3 | — | VID/PID CH341 K40 (`1a86:5512`) i galvo BJJCZ (`9588:9899`); porty UDP Ruidy 50200/40200 | `bc-drivers/src/usb.rs` (`USB_FAMILIES`), ADR 0013 |
+| MeerK40t (github.com/meerk40t/meerk40t) | MIT | punkty końcowe bulk CH341 (0x02 OUT, 0x82 IN) — `UNVERIFIED` do testu K40 (M3.4) | `USB_FAMILIES` |
+| opis protokołu Balor (galvo BJJCZ) | do sprawdzenia przy użyciu w M5 | punkty końcowe galvo (0x02 OUT, 0x88 IN) — `UNVERIFIED`, sterownik w M5 | `USB_FAMILIES` |
+| K40 Whisperer | do sprawdzenia przy pierwszym użyciu (M3.3) | — (jeszcze nieużywany) | — |
+| Zadig (zadig.akeo.ie) | GPL-3.0 | narzędzie zewnętrzne, do którego odsyła przewodnik sterownika na Windows; nie jest dołączane ani wywoływane | `usb::driver_guide`, tłumaczenia `usb-guide-*` |
 
 ## Pliki użytkownika (interoperacyjność, clean-room)
 

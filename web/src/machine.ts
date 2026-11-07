@@ -16,6 +16,8 @@ export interface MachineHost {
   redraw(): void;
   /** Zmiana położenia głowicy (znacznik na kanwie). */
   onHead(): void;
+  /** Okno dialogowe otwarte — skróty aplikacji wyłączone. */
+  modal: boolean;
 }
 
 export interface JogSettings {
@@ -24,6 +26,47 @@ export interface JogSettings {
   slow: number;
   fast: number;
   mode: "slow" | "fast";
+}
+
+export interface UsbGuide {
+  ok: boolean;
+  /** ok | winusb | udev | busy */
+  kind: string;
+  title: string;
+  steps: string[];
+}
+
+export interface UsbFound {
+  device: { vid: number; pid: number; product: string | null; driver: string | null; access: { state: string; driver?: string } };
+  family: { id: string; name: string; driver: string; milestone: string } | null;
+  guide: UsbGuide;
+}
+
+/** Sterowniki BurnCraft dostępne w tej wersji (rodziny USB z innym sterownikiem: „w etapie …”). */
+const READY_DRIVERS = new Set<string>(["grbl"]);
+
+const hex4 = (v: number) => v.toString(16).toUpperCase().padStart(4, "0");
+
+/** Kroki przewodnika w języku interfejsu (tekst z rdzenia jest po polsku — dla CLI i MCP). */
+function guideSteps(g: UsbGuide & { vid: number; pid: number }, driver: string | undefined): string[] {
+  const ids = `${hex4(g.vid)} ${hex4(g.pid)}`;
+  switch (g.kind) {
+    case "winusb":
+      return [
+        ...(driver ? [t("usb-guide-vendor", { driver })] : []),
+        t("usb-guide-winusb-1"),
+        t("usb-guide-winusb-2", { ids }),
+        t("usb-guide-winusb-3"),
+        t("usb-guide-winusb-4"),
+        ...(g.vid === 0x1a86 && g.pid === 0x5512 ? [t("usb-guide-ch341")] : []),
+      ];
+    case "udev":
+      return [t("usb-guide-udev-1", { path: "/etc/udev/rules.d/99-burncraft.rules" }), t("usb-guide-udev-2"), t("usb-guide-udev-3")];
+    case "busy":
+      return [t("usb-guide-busy")];
+    default:
+      return g.steps;
+  }
 }
 
 export const DEFAULT_JOG: JogSettings = { step_xy: 10, step_z: 1, slow: 5, fast: 50, mode: "fast" };
@@ -139,6 +182,10 @@ export class Machine {
   private portInput = h("input", { type: "text", "data-testid": "laser-port", "data-command": "machine.profile_save" });
   /** Wynik kreatora „Znajdź mój laser” (REQ-13-192). */
   found: { port: { port: string; chip: string | null }; baud: number | null; variant: string | null; version: string | null; error: string | null; profile: unknown }[] | null = null;
+  /** Urządzenia USB znanych rodzin laserów z kreatora (REQ-13-193). */
+  usb: UsbFound[] = [];
+  /** Przewodnik sterownika USB (REQ-13-020, REQ-13-021). */
+  usbGuide: (UsbGuide & { vid: number; pid: number; name: string }) | null = null;
 
   constructor(root: HTMLElement, private host: MachineHost) {
     root.append(this.laser.root, this.move.root, this.cons.root, this.mac.root);
@@ -410,8 +457,10 @@ export class Machine {
       h("h4", {}, t("laser-setup")),
       h("div", { class: "row" },
         this.btn("laser-find", "machine.find", "laser-find", async () => {
-          const r = (await this.host.run("machine.find", {})) as { found: Machine["found"] } | undefined;
+          const r = (await this.host.run("machine.find", {})) as { found: Machine["found"]; usb?: UsbFound[] } | undefined;
           this.found = r?.found ?? [];
+          this.usb = r?.usb ?? [];
+          this.hideGuide();
           this.render();
         }),
         this.portInput,
@@ -419,8 +468,59 @@ export class Machine {
           const p = this.portInput.value.trim();
           if (p) void add(serial(p, 115200));
         })),
-      ...(this.found && !this.found.length ? [h("p", { class: "empty", "data-testid": "laser-found-empty" }, t("laser-found-empty"))] : found),
+      ...(this.found && !this.found.length && !this.usb.length ? [h("p", { class: "empty", "data-testid": "laser-found-empty" }, t("laser-found-empty"))] : found),
+      ...this.usbRows(),
     ];
+  }
+
+  /** Urządzenia USB z kreatora i przewodnik sterownika (REQ-13-193, REQ-13-020/021). */
+  private usbRows(): HTMLElement[] {
+    if (!this.usb.length) return [];
+    const rows = this.usb.map((u, i) => {
+      const name = u.family?.name ?? u.device.product ?? "USB";
+      const state = u.device.access.state;
+      return h("div", { class: "row usb-dev", "data-testid": `laser-usb-${i}`, "data-state": state },
+        h("span", {}, `${name} (${hex4(u.device.vid)}:${hex4(u.device.pid)})`),
+        h("span", { class: `badge usb-${state}` }, t(`usb-state-${state}`)),
+        !u.family || !READY_DRIVERS.has(u.family.driver) ? h("span", { class: "muted" }, t("usb-driver-soon", { milestone: u.family?.milestone ?? "?" })) : null,
+        u.guide.ok ? null : h("button", { "data-testid": `laser-usb-${i}-guide`, "data-command": "machine.usb_guide", title: t("usb-guide-open"), "aria-label": t("usb-guide-open"),
+          onclick: async () => {
+            const g = (await this.host.run("machine.usb_guide", { vid: u.device.vid, pid: u.device.pid })) as UsbGuide | undefined;
+            if (g) this.showGuide({ ...g, vid: u.device.vid, pid: u.device.pid, name }, u.device.access.driver);
+          } }, t("usb-guide-open")));
+    });
+    return [h("h4", {}, t("laser-usb")), ...rows];
+  }
+
+  private guideRoot: HTMLElement | null = null;
+
+  /** Przewodnik sterownika w oknie dialogowym (panel boczny jest za wąski na kroki). */
+  private showGuide(g: UsbGuide & { vid: number; pid: number; name: string }, driver: string | undefined) {
+    this.hideGuide();
+    this.usbGuide = g;
+    this.host.modal = true;
+    const close = () => this.hideGuide();
+    const box = h("div", { class: "dialog usb-guide", role: "dialog", "aria-label": t(`usb-guide-title-${g.kind}`) },
+      h("h2", {}, t(`usb-guide-title-${g.kind}`)),
+      h("p", { class: "muted" }, `${g.name} (USB ID ${hex4(g.vid)}:${hex4(g.pid)})`),
+      h("ol", {}, ...guideSteps(g, driver).map((s) => h("li", {}, s))),
+      h("div", { class: "row" },
+        h("button", { "data-testid": "laser-usb-guide-close", "data-command": "machine.usb_guide", title: t("usb-guide-close"), onclick: close }, t("usb-guide-close"))));
+    this.guideRoot = h("div", { class: "dialog-backdrop", "data-testid": "laser-usb-guide" }, box);
+    this.guideRoot.addEventListener("keydown", (e: KeyboardEvent) => {
+      e.stopPropagation();
+      if (e.key === "Escape") close();
+    });
+    document.body.append(this.guideRoot);
+    box.querySelector("button")?.focus();
+  }
+
+  private hideGuide() {
+    if (!this.guideRoot) return;
+    this.guideRoot.remove();
+    this.guideRoot = null;
+    this.usbGuide = null;
+    this.host.modal = false;
   }
 
   private renderMove() {

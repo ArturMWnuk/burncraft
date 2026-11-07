@@ -189,13 +189,43 @@ struct FindParams {
 fn machine_find(s: &mut Session, p: Value) -> Result<Value, CmdError> {
     let p: FindParams = parse(p)?;
     s.tick(0, 1)?;
-    let found = s
+    let (found, usb) = {
+        let m = s.machines.lock().expect("urządzenia");
+        (m.find(p.probe, &p.bauds), m.find_usb())
+    };
+    s.tick(1, 1)?;
+    ok(json!({ "found": found, "usb": usb }))
+}
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+struct UsbGuideParams {
+    /// VID urządzenia USB.
+    vid: u16,
+    /// PID urządzenia USB.
+    pid: u16,
+    /// System: windows | linux | macos (domyślnie system programu).
+    #[serde(default)]
+    os: Option<String>,
+}
+
+fn machine_usb_guide(s: &mut Session, p: Value) -> Result<Value, CmdError> {
+    let p: UsbGuideParams = parse(p)?;
+    let dev = s
         .machines
         .lock()
         .expect("urządzenia")
-        .find(p.probe, &p.bauds);
-    s.tick(1, 1)?;
-    ok(json!({ "found": found }))
+        .usb_devices()
+        .into_iter()
+        .find(|d| d.vid == p.vid && d.pid == p.pid)
+        .ok_or_else(|| {
+            CmdError::new(
+                "not_found",
+                format!("brak urządzenia USB {:04x}:{:04x}", p.vid, p.pid),
+            )
+        })?;
+    let os = p.os.unwrap_or_else(|| std::env::consts::OS.to_string());
+    ok(bc_drivers::usb::driver_guide(&dev, &os))
 }
 
 #[derive(Deserialize, JsonSchema)]
@@ -1249,7 +1279,8 @@ pub(crate) fn register_all(r: &mut Registry) {
         &["REQ-13-196"],
         profile_delete,
     );
-    reg(r, "machine.find", "Znajdź mój laser", "Kreator: lista portów szeregowych z VID/PID (FTDI, CH340, CP210x) i próba połączenia GRBL na kolejnych prędkościach; wynik z gotowymi profilami.", Read, false, schema_of::<FindParams>(), &["REQ-13-192", "REQ-13-018"], machine_find);
+    reg(r, "machine.find", "Znajdź mój laser", "Kreator: lista portów szeregowych z VID/PID (FTDI, CH340, CP210x) i próba połączenia GRBL na kolejnych prędkościach; wynik z gotowymi profilami. Pole usb: urządzenia USB znanych rodzin laserów (K40 CH341, galvo BJJCZ) ze stanem sterownika i przewodnikiem.", Read, false, schema_of::<FindParams>(), &["REQ-13-192", "REQ-13-018", "REQ-13-193"], machine_find);
+    reg(r, "machine.usb_guide", "Sterownik USB", "Przewodnik dostępu do urządzenia USB: instalacja sterownika WinUSB narzędziem Zadig na Windows (albo sterownik producenta CH341), reguły udev na Linuksie; ok = urządzenie gotowe.", Read, false, schema_of::<UsbGuideParams>(), &["REQ-13-020", "REQ-13-021", "REQ-13-019"], machine_usb_guide);
     reg(r, "machine.connect", "Połącz", "Łączy profil z urządzeniem (rozpoznanie odmiany GRBL) i wybiera je w sesji. Kilka urządzeń może być połączonych naraz.", Design, false, schema_of::<ConnectParams>(), &["REQ-13-002", "REQ-13-028", "REQ-13-072", "REQ-13-073", "REQ-13-074"], machine_connect);
     reg(
         r,

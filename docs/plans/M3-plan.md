@@ -24,9 +24,18 @@ Przydział wymagań do przyrostów sprawdza skrypt: każda z 67 pozycji jest w d
 
 Każde nowe sterowanie w GUI to polecenie rejestru (REQ-01-029, `executor`). Sterowniki Ruida i Lihuiyu implementują trait `Driver` z M2 bez zmiany interfejsu (ADR 0010); nowe możliwości (pamięć plików, autofokus, brak PWM) opisują `Caps`.
 
+## Stan przyrostów
+
+- **M3.1 — zakończony 2026-11-07.** 6 wymagań `verified`, bez odstępstw. ADR 0013. Para commitów red/green:
+  - `bc_drivers::usb`: transport USB bulk na `nusb` (`UsbBackend`, `UsbBulk`, `UsbTransport`, `TransportSpec::Usb`), rodziny `USB_FAMILIES` (CH341 K40/Moshi, galvo BJJCZ), stan dostępu (WinUSB/brak/sterownik producenta na Windows, uprawnienia na Linuksie), urządzenie fikcyjne `FakeUsb` (`BURNCRAFT_FAKE_USB=1`);
+  - transport UDP (`UdpTransport`, `TransportSpec::Udp` z portem lokalnym);
+  - kreator: `machine.find` z polem `usb`, polecenie `machine.usb_guide` (Zadig + WinUSB, alternatywa CH341 DLL; reguły udev), sekcja „Urządzenia USB” i przewodnik w oknie dialogowym okna Laser (pl/en);
+  - `packaging/linux/99-burncraft.rules`, `burncraft-cli udev`, `udevadm verify` w CI;
+  - procedury `docs/procedures/M3-gui-checks.md` (zrzuty `img/m3/`, generator `web/e2e/procedures-m3.spec.ts`).
+
 ## ADR-y etapu
 
-- **ADR 0013** — źródła wiedzy o protokołach (REQ-00-018): wolno korzystać z publicznej dokumentacji, opisów protokołów i z otwartych implementacji czytanych jako źródło wiedzy (np. MeerK40t, K40 Whisperer — GPL), bez kopiowania kodu, struktur ani tekstów; każdy fakt o protokole ma w kodzie odnośnik do źródła, a lista źródeł jest w `THIRD_PARTY.md`; szczegóły niepotwierdzone na sprzęcie dostają `// UNVERIFIED:` jak w M2.
+- **ADR 0013** — źródła wiedzy o protokołach (REQ-00-018): wolno korzystać z publicznej dokumentacji, opisów protokołów i z otwartych implementacji czytanych jako źródło wiedzy (np. MeerK40t — MIT, K40 Whisperer — licencja do sprawdzenia przy pierwszym użyciu), bez kopiowania kodu, struktur ani tekstów; każdy fakt o protokole ma w kodzie odnośnik do źródła, a lista źródeł jest w `THIRD_PARTY.md`; szczegóły niepotwierdzone na sprzęcie dostają `// UNVERIFIED:` jak w M2.
 - **ADR 0014** — sterownik Ruida: warstwy (kodowanie bajtów → pakiet UDP/serial → polecenia → plik `.rd`), kompilator `.rd` jako czysta funkcja zadania (jak G-code w ADR 0011), model pamięci plików, emulator.
 - **ADR 0015** — sterownik Lihuiyu i Moshi: ramka EGV, CRC-8, maszyna stanów potwierdzeń, tablice kodowania prędkości per wariant płyty, raster „step mode”, dither zamiast mocy, emulator.
 - Transport USB (`nusb`, kreator sterownika na Windows, reguły udev) — część ADR 0013 albo osobny ADR przy M3.1.
@@ -42,7 +51,7 @@ Każde nowe sterowanie w GUI to polecenie rejestru (REQ-01-029, `executor`). Ste
 - **Sprzęt**: zleceniodawca ma K40 z płytą M2 Nano — test sprzętowy K40 w M3.4 (REQ-13-030, 040, 049, REQ-19-016). Ruidy RDC6445G nie ma — test przechodzi do M7 („Przenieś test do M7”, DEV-005); sterownik i profil modelu powstają w M3.2 na emulatorze.
 - **Biblioteka USB**: `nusb` (czysty Rust, MIT/Apache-2.0) — zgoda na pobranie z crates.io przy M3.1.
 - **Kreator sterownika na Windows (REQ-13-020)**: wykrywa brak sterownika WinUSB i prowadzi krok po kroku przez instalację zewnętrznym narzędziem (np. Zadig), którego BurnCraft nie dołącza; alternatywą jest oryginalny sterownik CH341 DLL (REQ-13-040).
-- **Źródła wiedzy (REQ-00-018, ADR 0013)**: otwarte projekty (MeerK40t, K40 Whisperer, GPL) tylko jako źródło wiedzy o protokołach, bez kopiowania kodu; odnośniki do źródeł w kodzie i `THIRD_PARTY.md`.
+- **Źródła wiedzy (REQ-00-018, ADR 0013)**: otwarte projekty (MeerK40t, K40 Whisperer) tylko jako źródło wiedzy o protokołach, bez kopiowania kodu; odnośniki do źródeł w kodzie i `THIRD_PARTY.md`. Uwaga z 2026-11-07: pytanie do zleceniodawcy podawało licencję GPL dla obu projektów; MeerK40t ma licencję MIT, licencję K40 Whisperer sprawdzimy przy pierwszym użyciu (decyzja „tylko wiedza” nie zależy od licencji).
 - **Pakiety `.lbzip` (REQ-02-095)**: bez plików przykładowych — przeniesione do M4 („Nie, przenieś do M4”, DEV-006).
 ## Ryzyka
 

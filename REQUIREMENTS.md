@@ -64,7 +64,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 
 | Sekcja | Wymagań | MUST | SHOULD | LATER | verified | done | in_progress | todo | deviation |
 |---|---|---|---|---|---|---|---|---|---|
-| 0 | 20 | 20 | 0 | 0 | 6 | 0 | 0 | 14 | 0 |
+| 0 | 20 | 20 | 0 | 0 | 7 | 0 | 0 | 13 | 0 |
 | 1 | 44 | 41 | 3 | 0 | 36 | 0 | 0 | 8 | 0 |
 | 2 | 111 | 101 | 10 | 0 | 67 | 0 | 0 | 44 | 0 |
 | 3 | 83 | 83 | 0 | 0 | 52 | 0 | 0 | 31 | 0 |
@@ -77,7 +77,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | 10 | 24 | 24 | 0 | 0 | 17 | 0 | 0 | 7 | 0 |
 | 11 | 38 | 31 | 7 | 0 | 1 | 0 | 0 | 37 | 0 |
 | 12 | 26 | 26 | 0 | 0 | 0 | 0 | 0 | 26 | 0 |
-| 13 | 199 | 195 | 2 | 2 | 68 | 0 | 0 | 131 | 0 |
+| 13 | 199 | 195 | 2 | 2 | 73 | 0 | 0 | 126 | 0 |
 | 14 | 32 | 27 | 5 | 0 | 8 | 0 | 0 | 24 | 0 |
 | 15 | 108 | 108 | 0 | 0 | 74 | 0 | 0 | 34 | 0 |
 | 16 | 13 | 13 | 0 | 0 | 7 | 0 | 0 | 6 | 0 |
@@ -86,7 +86,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | 19 | 36 | 36 | 0 | 0 | 15 | 0 | 0 | 21 | 0 |
 | 20 | 12 | 12 | 0 | 0 | 11 | 0 | 0 | 0 | 1 |
 | 21 | 15 | 15 | 0 | 0 | 14 | 0 | 0 | 1 | 0 |
-| **Razem** | **1144** | 1099 | 41 | 4 | 540 | 0 | 0 | 603 | 1 |
+| **Razem** | **1144** | 1099 | 41 | 4 | 546 | 0 | 0 | 597 | 1 |
 
 ### Etapy
 
@@ -95,7 +95,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | M0 | 112 | 112 | closed |
 | M1 | 202 | 202 | closed |
 | M2 | 227 | 227 | closed |
-| M3 | 67 | 0 | planned |
+| M3 | 67 | 6 | planned |
 | M4 | 170 | 0 | planned |
 | M5 | 108 | 0 | planned |
 | M6 | 167 | 0 | planned |
@@ -126,7 +126,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-00-015 | 0 | MUST | M0 | manual | verified | Wlasna nazwa, wlasna identyfikacja wizualna i wlasne ikony |
 | REQ-00-016 | 0 | MUST | M0 | auto | verified | Wlasny natywny format pliku (nie format .lbrn/.lbrn2) |
 | REQ-00-017 | 0 | MUST | M1 | manual | verified | Interoperacyjnosc (.lbrn/.lbrn2/.clb/.lbart/.lbzip) implementowana wylacznie na podstawie analizy plikow uzytkownika, nie kodu programow, ktore je zapisuja |
-| REQ-00-018 | 0 | MUST | M3 | manual | todo | Wiedza o protokolach sterownikow wylacznie z publicznych, otwartych zrodel z poszanowaniem licencji |
+| REQ-00-018 | 0 | MUST | M3 | manual | verified | Wiedza o protokolach sterownikow wylacznie z publicznych, otwartych zrodel z poszanowaniem licencji |
 | REQ-00-019 | 0 | MUST | M0 | manual | verified | Plik THIRD_PARTY.md dokumentuje kazde wykorzystane zrodlo wiedzy i biblioteke |
 | REQ-00-020 | 0 | MUST | M0 | manual | verified | Licencja: GPL-3.0-or-later dla aplikacji, MIT/Apache-2.0 dla rdzenia i SDK wtyczek, uzasadnienie w docs/adr/0001-license.md |
 
@@ -895,11 +895,11 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-016 | 13.1 | MUST | M2 | auto | verified | Kompilator zadan niezalezny od transportu |
 | REQ-13-017 | 13.1 | MUST | M2 | emu | verified | Kazdy sterownik ma emulator/symulator do testow |
 | REQ-13-018 | 13.2 | MUST | M2 | auto | verified | Transport Serial/USB-CDC (FTDI, CH340, CP210x) |
-| REQ-13-019 | 13.2 | MUST | M3 | auto | todo | Transport USB bulk przez libusb/WinUSB |
-| REQ-13-020 | 13.2 | MUST | M3 | manual | todo | Kreator instalacji sterownika USB na Windows |
-| REQ-13-021 | 13.2 | MUST | M3 | manual | todo | Reguly udev na Linuksie |
+| REQ-13-019 | 13.2 | MUST | M3 | auto | verified | Transport USB bulk przez libusb/WinUSB |
+| REQ-13-020 | 13.2 | MUST | M3 | manual | verified | Kreator instalacji sterownika USB na Windows |
+| REQ-13-021 | 13.2 | MUST | M3 | manual | verified | Reguly udev na Linuksie |
 | REQ-13-022 | 13.2 | MUST | M2 | auto | verified | Transport TCP |
-| REQ-13-023 | 13.2 | MUST | M3 | auto | todo | Transport UDP |
+| REQ-13-023 | 13.2 | MUST | M3 | auto | verified | Transport UDP |
 | REQ-13-024 | 13.2 | MUST | M2 | auto | verified | Transport WebSocket |
 | REQ-13-025 | 13.2 | MUST | M6 | auto | todo | Transport HTTP/REST |
 | REQ-13-026 | 13.2 | MUST | M6 | auto | todo | Wykrywanie Wi-Fi (mDNS/UDP discovery) |
@@ -1069,7 +1069,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-190 | 13.3 | LATER | LATER | emu | todo | Wirtualna drukarka na wszystkich OS |
 | REQ-13-191 | 13.3 | MUST | M2 | auto | verified | Urzadzenie fikcyjne/symulator: praca bez maszyny, pelny podglad i eksport |
 | REQ-13-192 | 13.3 | MUST | M2 | emu | verified | Kreator „Znajdz moj laser”: skanowanie portow |
-| REQ-13-193 | 13.3 | MUST | M3 | emu | todo | Kreator: USB VID/PID |
+| REQ-13-193 | 13.3 | MUST | M3 | emu | verified | Kreator: USB VID/PID |
 | REQ-13-194 | 13.3 | MUST | M3 | emu | todo | Kreator: UDP broadcast Ruida |
 | REQ-13-195 | 13.3 | MUST | M6 | emu | todo | Kreator: mDNS |
 | REQ-13-196 | 13.3 | MUST | M2 | auto | verified | Reczne tworzenie profilu urzadzenia |

@@ -310,3 +310,12 @@ ol.history li.redo { color: var(--muted); font-style: italic; }
 .dialog.layer-settings .error:empty { display: none; }
 .ls-field input.wide { width: 190px; }
 .ls-row .ls-field input.wide { width: 150px; }
+
+/* urządzenia USB i przewodnik sterownika (REQ-13-193, REQ-13-020/021) */
+.usb-dev { flex-wrap: wrap; gap: 4px 8px; }
+.badge { font-size: 11px; padding: 1px 6px; border-radius: 8px; border: 1px solid var(--border); }
+.badge.usb-ready { border-color: #1f9d55; color: #1f9d55; }
+.badge.usb-driver_missing, .badge.usb-vendor_driver, .badge.usb-permission_denied, .badge.usb-busy { border-color: #d68a00; color: #d68a00; }
+.dialog.usb-guide { width: min(560px, 94vw); }
+.usb-guide ol { margin: 6px 0; padding-left: 22px; }
+.usb-guide li { margin: 6px 0; line-height: 1.4; }

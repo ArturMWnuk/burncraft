@@ -253,36 +253,81 @@ impl Transport for TcpTransport {
 
 // ---------- UDP ----------
 
-/// UDP (REQ-13-023): każdy zapis to jeden datagram; odczyt zwraca kolejne bajty odebranych
-/// datagramów.
+/// UDP (REQ-13-023): każdy zapis to jeden datagram do `host:port`; odczyt zwraca kolejne
+/// bajty datagramów od tego nadawcy (inne są pomijane).
 pub struct UdpTransport {
+    sock: std::net::UdpSocket,
+    peer: std::net::SocketAddr,
+    pending: std::collections::VecDeque<u8>,
     name: String,
 }
 
 impl UdpTransport {
-    pub fn connect(
-        host: &str,
-        port: u16,
-        _local_port: Option<u16>,
-    ) -> Result<Self, TransportError> {
-        Err(TransportError(format!("{host}:{port}: UDP niedostępne")))
+    pub fn connect(host: &str, port: u16, local_port: Option<u16>) -> Result<Self, TransportError> {
+        use std::net::ToSocketAddrs;
+        let peer = (host, port)
+            .to_socket_addrs()
+            .map_err(|e| TransportError(format!("{host}:{port}: {e}")))?
+            .next()
+            .ok_or_else(|| TransportError(format!("{host}:{port}: brak adresu")))?;
+        let any: std::net::IpAddr = if peer.is_ipv4() {
+            std::net::Ipv4Addr::UNSPECIFIED.into()
+        } else {
+            std::net::Ipv6Addr::UNSPECIFIED.into()
+        };
+        let sock = std::net::UdpSocket::bind((any, local_port.unwrap_or(0))).map_err(|e| {
+            TransportError(format!("UDP port lokalny {}: {e}", local_port.unwrap_or(0)))
+        })?;
+        Ok(UdpTransport {
+            sock,
+            peer,
+            pending: std::collections::VecDeque::new(),
+            name: format!("{host}:{port}"),
+        })
     }
 }
 
 impl Transport for UdpTransport {
-    fn write(&mut self, _data: &[u8]) -> Result<(), TransportError> {
-        Err(TransportError("UDP niedostępne".into()))
+    fn write(&mut self, data: &[u8]) -> Result<(), TransportError> {
+        self.sock.send_to(data, self.peer)?;
+        Ok(())
     }
 
-    fn read(&mut self, _buf: &mut [u8], _timeout: Duration) -> Result<usize, TransportError> {
-        Err(TransportError("UDP niedostępne".into()))
+    fn read(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize, TransportError> {
+        let deadline = Instant::now() + timeout;
+        let mut dgram = [0u8; 65536];
+        while self.pending.is_empty() {
+            let left = deadline.saturating_duration_since(Instant::now());
+            self.sock
+                .set_read_timeout(Some(left.max(Duration::from_millis(1))))?;
+            match self.sock.recv_from(&mut dgram) {
+                Ok((n, from)) if from == self.peer => self.pending.extend(&dgram[..n]),
+                Ok(_) => {}
+                // Windows: ICMP „port nieosiągalny” po wysłaniu do zamkniętego portu
+                Err(e)
+                    if matches!(
+                        e.kind(),
+                        std::io::ErrorKind::WouldBlock
+                            | std::io::ErrorKind::TimedOut
+                            | std::io::ErrorKind::ConnectionReset
+                    ) => {}
+                Err(e) => return Err(e.into()),
+            }
+            if Instant::now() >= deadline {
+                break;
+            }
+        }
+        let n = self.pending.len().min(buf.len());
+        for (i, b) in self.pending.drain(..n).enumerate() {
+            buf[i] = b;
+        }
+        Ok(n)
     }
 
     fn describe(&self) -> String {
         format!("udp {}", self.name)
     }
 }
-
 // ---------- WebSocket ----------
 
 type Ws = tungstenite::WebSocket<tungstenite::stream::MaybeTlsStream<TcpStream>>;

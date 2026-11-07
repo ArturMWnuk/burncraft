@@ -1,0 +1,9 @@
+# BurnCraft: dostęp do laserów USB bez uprawnień administratora (REQ-13-021).
+# Instalacja: burncraft-cli udev | sudo tee /etc/udev/rules.d/99-burncraft.rules
+#             sudo udevadm control --reload-rules && sudo udevadm trigger
+
+# K40 Lihuiyu / Moshi (CH341)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1a86", ATTRS{idProduct}=="5512", MODE="0660", TAG+="uaccess"
+
+# Galvo BJJCZ (EZCAD2, LMC)
+SUBSYSTEM=="usb", ATTRS{idVendor}=="9588", ATTRS{idProduct}=="9899", MODE="0660", TAG+="uaccess"

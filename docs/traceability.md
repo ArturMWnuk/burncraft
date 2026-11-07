@@ -19,7 +19,7 @@
 | REQ-00-015 | M0 | verified |  | docs/procedures/M0-manual-checks.md |
 | REQ-00-016 | M0 | verified | `crates/bc-doc/src/bcraft.rs::req_00_016_own_native_format` |  |
 | REQ-00-017 | M1 | verified |  | docs/procedures/M1-manual-checks.md |
-| REQ-00-018 | M3 | todo |  |  |
+| REQ-00-018 | M3 | verified |  | docs/procedures/M3-gui-checks.md |
 | REQ-00-019 | M0 | verified |  | docs/procedures/M0-manual-checks.md |
 | REQ-00-020 | M0 | verified |  | docs/procedures/M0-manual-checks.md |
 | REQ-01-001 | M0 | verified | `(rejestr)::req_15_001_headless_stdio_and_malformed_input` |  |
@@ -723,11 +723,11 @@
 | REQ-13-016 | M2 | verified | `crates/bc-drivers/tests/compile.rs::req_13_016_compiler_independent_of_transport` |  |
 | REQ-13-017 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_191_017_simulator_device` |  |
 | REQ-13-018 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_018_072_serial_transport_and_usb_chips` |  |
-| REQ-13-019 | M3 | todo |  |  |
-| REQ-13-020 | M3 | todo |  |  |
-| REQ-13-021 | M3 | todo |  |  |
+| REQ-13-019 | M3 | verified | `crates/bc-drivers/tests/usb_udp.rs::req_13_019_usb_bulk_transport_on_fake_device`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_019_usb_transport_spec_and_opener`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_019_known_families_and_windows_driver_state` |  |
+| REQ-13-020 | M3 | verified | `crates/bc-commands/tests/m31_commands.rs::req_13_020_021_usb_guide_command`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_020_windows_driver_guide`<br>`web/e2e/usb.spec.ts::req_13_020_driver_guide_for_usb_laser` | docs/procedures/M3-gui-checks.md |
+| REQ-13-021 | M3 | verified | `crates/bc-cli/tests/device_cli.rs::req_13_021_cli_prints_udev_rules`<br>`crates/bc-commands/tests/m31_commands.rs::req_13_020_021_usb_guide_command`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_021_udev_rules_file_matches_known_families`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_021_linux_permission_guide` | docs/procedures/M3-gui-checks.md |
 | REQ-13-022 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_022_073_tcp_transport` |  |
-| REQ-13-023 | M3 | todo |  |  |
+| REQ-13-023 | M3 | verified | `crates/bc-drivers/tests/usb_udp.rs::req_13_023_udp_transport_datagrams`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_023_udp_local_port_and_spec` |  |
 | REQ-13-024 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_024_074_websocket_transport` |  |
 | REQ-13-025 | M6 | todo |  |  |
 | REQ-13-026 | M6 | todo |  |  |
@@ -897,7 +897,7 @@
 | REQ-13-190 | LATER | todo |  |  |
 | REQ-13-191 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_191_017_simulator_device` |  |
 | REQ-13-192 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_192_find_my_laser`<br>`crates/bc-drivers/tests/hardware_m25.rs::req_13_192_find_profile_workspace_from_max_travel` |  |
-| REQ-13-193 | M3 | todo |  |  |
+| REQ-13-193 | M3 | verified | `crates/bc-commands/tests/m31_commands.rs::req_13_193_machine_find_lists_usb_lasers`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_find_my_laser_lists_usb_lasers_by_vid_pid`<br>`web/e2e/usb.spec.ts::req_13_193_find_my_laser_shows_usb_lasers` |  |
 | REQ-13-194 | M3 | todo |  |  |
 | REQ-13-195 | M6 | todo |  |  |
 | REQ-13-196 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_196_028_profiles_and_multiple_devices`<br>`web/e2e/machine.spec.ts::req_13_196_laser_window_adds_serial_profile` |  |

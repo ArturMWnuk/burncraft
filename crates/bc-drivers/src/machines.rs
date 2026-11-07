@@ -135,10 +135,16 @@ pub trait Opener: Send + Sync {
 /// Otwiera transport: USB przez [`Opener::usb`] danego otwierającego, pozostałe jak
 /// [`SystemOpener`].
 pub fn open_spec<O: Opener + ?Sized>(
-    _o: &O,
+    o: &O,
     spec: &TransportSpec,
 ) -> Result<Box<dyn Transport>, TransportError> {
-    SystemOpener.open(spec)
+    match spec {
+        TransportSpec::Usb { vid, pid, serial } => Ok(Box::new(crate::usb::UsbTransport::open(
+            &*o.usb(),
+            &crate::usb::UsbSelector::for_device(*vid, *pid, serial.clone()),
+        )?)),
+        _ => SystemOpener.open(spec),
+    }
 }
 
 /// Otwieranie prawdziwych portów, sieci i emulatorów w procesie.
@@ -155,11 +161,10 @@ impl Opener for SystemOpener {
                 port,
                 local_port,
             } => Box::new(UdpTransport::connect(host, *port, *local_port)?),
-            TransportSpec::Usb { vid, pid, .. } => {
-                return Err(TransportError(format!(
-                    "USB {vid:04x}:{pid:04x}: niedostępne"
-                )))
-            }
+            TransportSpec::Usb { vid, pid, serial } => Box::new(crate::usb::UsbTransport::open(
+                &*self.usb(),
+                &crate::usb::UsbSelector::for_device(*vid, *pid, serial.clone()),
+            )?),
             TransportSpec::Emulator { variant, speed } => {
                 let mut cfg = EmuConfig::variant(variant);
                 cfg.speed = speed.unwrap_or(f64::INFINITY);
@@ -172,6 +177,15 @@ impl Opener for SystemOpener {
 
     fn ports(&self) -> Vec<PortInfo> {
         list_serial_ports()
+    }
+
+    /// USB systemu (`nusb`); `BURNCRAFT_FAKE_USB=1` — urządzenia fikcyjne (testy E2E, zrzuty).
+    fn usb(&self) -> Arc<dyn crate::usb::UsbBackend> {
+        if std::env::var("BURNCRAFT_FAKE_USB").as_deref() == Ok("1") {
+            Arc::new(crate::usb::FakeUsb::demo())
+        } else {
+            Arc::new(crate::usb::NusbBackend)
+        }
     }
 }
 
@@ -574,7 +588,25 @@ impl Machines {
 
     /// Kreator „Znajdź mój laser”: urządzenia USB znanych rodzin laserów (REQ-13-193).
     pub fn find_usb(&self) -> Vec<UsbFound> {
-        Vec::new()
+        self.opener
+            .usb()
+            .list()
+            .into_iter()
+            .filter_map(|device| {
+                let family = *crate::usb::usb_family(device.vid, device.pid)?;
+                let guide = crate::usb::driver_guide(&device, std::env::consts::OS);
+                Some(UsbFound {
+                    device,
+                    family: Some(family),
+                    guide,
+                })
+            })
+            .collect()
+    }
+
+    /// Wszystkie urządzenia USB systemu (przewodnik sterownika, REQ-13-020/021).
+    pub fn usb_devices(&self) -> Vec<crate::usb::UsbDeviceInfo> {
+        self.opener.usb().list()
     }
 
     /// Kreator „Znajdź mój laser”: porty z VID/PID i próba GRBL na znanych prędkościach.

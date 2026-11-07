@@ -25,9 +25,10 @@ impl Opener for FakeOpener {
 }
 
 fn session() -> Session {
-    let mut s = Session::default();
-    s.machines = Machines::new(Arc::new(FakeOpener(Arc::new(FakeUsb::demo())))).handle();
-    s
+    Session {
+        machines: Machines::new(Arc::new(FakeOpener(Arc::new(FakeUsb::demo())))).handle(),
+        ..Default::default()
+    }
 }
 
 fn run(r: &Registry, s: &mut Session, id: &str, p: Value) -> Value {
