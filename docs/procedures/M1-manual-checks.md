@@ -7,7 +7,7 @@ Procedura: przegląd `crates/bc-io/src/lbrn.rs`, ADR 0008 i `THIRD_PARTY.md`.
 Wynik (2026-10-29): **zgodne**. Importer `.lbrn2` obsługuje wyłącznie elementy widoczne w pliku dostarczonym przez użytkownika (`CutSetting`, `Shape Type="Rect"`, `XForm`). Inne typy kształtów są zgłaszane jako ostrzeżenie i nie są zgadywane. Nie użyto kodu, dokumentacji ani zasobów innych programów do laserów. 2026-10-29: dodano próbki użytkownika `elipsa`, `hex`, `krzywe`, `text` i `grupa` (`.lbrn` i `.lbrn2`). Obsługa rozszerzona wyłącznie o elementy z tych plików. Render `grupa.lbrn2` porównany wzrokowo z miniaturą zapisaną w pliku: zgodny. Formaty `.clb`, `.lbart` i `.lbzip` czekają na pliki przykładowe (M3/M4).
 
 ## REQ-19-003, REQ-19-004, REQ-19-005 — fuzzing importerów (cargo-fuzz)
-Procedura: zadanie CI `fuzz` (Linux, nightly, libFuzzer + AddressSanitizer), po 120 s na każdy cel, z korpusem startowym w `fuzz/corpus/`.
+Procedura: zadanie CI `fuzz` (Linux, nightly, libFuzzer + AddressSanitizer), po 120 s na każdy cel, z korpusem startowym w `fuzz/corpus/`. Wymienione commity i przebiegi są w archiwum historii sprzed otwarcia projektu, `ArturMWnuk/burncraft-history`.
 Wynik — run **40821330127** (commit `acf841e`, 2026-10-29), bez awarii:
 - REQ-19-003 `svg_import`: 1 223 587 przebiegów, pokrycie 6067 krawędzi,
 - REQ-19-004 `dxf_import`: 696 715 przebiegów, pokrycie 3546 krawędzi,

@@ -46,11 +46,11 @@ Pełna macierz z nazwami testów: [`docs/traceability.md`](../traceability.md).
 2. **Weryfikacja na działającym programie**: testy `auto` uruchamiają rzeczywisty kod. Testy hosta rozmawiają z `bc-host` po WebSocket, a testy E2E sterują zbudowanym frontendem z `burncraft-cli serve`. 40 procedur ręcznych ma zrzuty z działającej aplikacji (`docs/procedures/M1-gui-checks.md`); REQ-03-015 zmierzył zleceniodawca linijką.
 3. **Testy lokalne** (2026-11-03): `cargo test --workspace` — 295 testów Rust (ok), `unittest` — 13 (ok), Playwright (Edge) — 60 ok, 8 pominiętych (generatory zrzutów do procedur ręcznych, uruchamiane z `BC_SCREENSHOTS=1`). `cargo clippy --workspace --all-targets -D warnings` i `cargo fmt --check` — czyste.
 4. **req-check** z logami cargo, unittest i Playwright: 0 błędów. Kontrola bramki: przy `M1: closed` req-check nadal zgłasza 0 błędów.
-5. **CI**: pełna macierz (`workflow_dispatch`) — 5 platform, aplikacja Tauri na 3 systemach, fuzzing 3 importerów. Pierwszy przebieg (41685337878, `bd40ff2`) wykrył niestabilny test wydajności na macOS Intel (warunek oczekiwania spełniony przed nadejściem sceny). Poprawka: `976e187`. Przebieg końcowy: zob. sekcja „CI”.
+5. **CI**: pełna macierz (`workflow_dispatch`) — 5 platform, aplikacja Tauri na 3 systemach, fuzzing 3 importerów. Pierwszy przebieg (41685337878, `bd40ff2` w archiwum `ArturMWnuk/burncraft-history`) wykrył niestabilny test wydajności na macOS Intel (warunek oczekiwania spełniony przed nadejściem sceny). Poprawka: `976e187`. Przebieg końcowy: zob. sekcja „CI”.
 
 ## CI
 
-Repozytorium prywatne `ArturMWnuk/burncraft`, commit `aa09c1e` (kod końcowy etapu):
+Prywatne repozytorium sprzed otwarcia projektu (dziś archiwum `ArturMWnuk/burncraft-history`; tam są wymienione commity i przebiegi), commit `aa09c1e` (kod końcowy etapu):
 - push, run **41699058410**: Linux x64, Windows, aplikacja Tauri (Linux) — success.
 - pełna macierz (`workflow_dispatch`), run **41699074436**: testy na Windows, macOS x64 (`macos-15-intel`), macOS arm64 (`macos-15`), Linux x64 i Linux arm64; aplikacja Tauri na Windows, macOS i Linux; fuzzing importerów SVG, DXF i `.lbrn2`. Wszystkie 11 zadań: success.
 

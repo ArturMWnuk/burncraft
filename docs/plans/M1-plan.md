@@ -30,7 +30,7 @@ Wymaganie procesowe REQ-20-001. Zakres = 204 pozycje `ms: M1` w `requirements.ya
 - **REQ-02-056 (przeglądarka kopii preferencji)** zrealizowane 2026-11-03: okno Ustawienia → „Kopie preferencji…” (`web/src/dialogs.ts::openBackups`) z listą kopii od najnowszej (data, rozmiar), podglądem różnic względem bieżących ustawień (nowe polecenie `prefs.backup_diff`) i przywracaniem po potwierdzeniu (`prefs.restore`, potem ponowne wczytanie preferencji); tłumaczenia pl/en. Testy: `tests_m12.rs::req_02_056_*`, `web/e2e/prefs.spec.ts::req_02_056_*`.
 - **REQ-01-029** zrealizowane 2026-11-03 (decyzja „Dodaj do rejestru”): widok, narzędzia, przyciąganie, aktywna warstwa, punkt odniesienia i okna dialogowe jako polecenia rejestru wykonywane przez okno (`bc-commands/src/window.rs`, `executor: "window"`, przekazywanie przez host `ui.execute`). Testy: `tests_m1close.rs`, `host.rs::req_01_029_*`, `web/e2e/commands.spec.ts`.
 - **REQ-16-006** zrealizowane 2026-11-03 (decyzja „Zrób teraz”): postęp `gui.progress` i anulowanie `gui.cancel` / `job.cancel` z wycofaniem zmian, pasek postępu w oknie; liniowe sprawdzanie zakresu po tablicach. Testy: `host.rs::req_16_006_*`, `web/e2e/progress.spec.ts`.
-- **Zamknięcie etapu** (2026-11-03): pełna macierz CI run 41699074436 na `aa09c1e` — wszystkie zadania zielone; przegląd `docs/reviews/M1-review.md`; `milestones.yaml`: `M1: closed`.
+- **Zamknięcie etapu** (2026-11-03): pełna macierz CI run 41699074436 na `aa09c1e` (archiwum historii sprzed otwarcia projektu, `ArturMWnuk/burncraft-history`) — wszystkie zadania zielone; przegląd `docs/reviews/M1-review.md`; `milestones.yaml`: `M1: closed`.
 
 ## ADR-y etapu
 
