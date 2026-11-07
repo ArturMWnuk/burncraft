@@ -22,7 +22,7 @@ Data: 2026-10-28 · Środowisko: Windows 11, rustc 1.99.1, Python 3.12 · Proced
 
 ## CI (zweryfikowane 2026-10-28)
 
-Repozytorium prywatne `ArturMWnuk/burncraft`, run **40670642608** (commit `12cfd2d`): Windows, macOS x64 (`macos-15-intel`), macOS arm64, Linux x64 i Linux arm64 — wszystkie zadania success (od 37 s do 3 min 49 s). Pierwszy przebieg (40666725918) wykrył dwa błędy, oba naprawione w `12cfd2d`:
+Prywatne repozytorium sprzed otwarcia projektu (dziś archiwum `ArturMWnuk/burncraft-history`; tam są wymienione commity i przebiegi), run **40670642608** (commit `12cfd2d`): Windows, macOS x64 (`macos-15-intel`), macOS arm64, Linux x64 i Linux arm64 — wszystkie zadania success (od 37 s do 3 min 49 s). Pierwszy przebieg (40666725918) wykrył dwa błędy, oba naprawione w `12cfd2d`:
 - `req-check` padał na konsoli Windows (cp1252 nie koduje polskich znaków),
 - runner `macos-13` jest wycofany, więc zadanie stało w kolejce bez końca.
 

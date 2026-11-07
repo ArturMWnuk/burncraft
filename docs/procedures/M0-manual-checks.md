@@ -84,7 +84,7 @@ Wynik: **zgodne**. `docs/reviews/M0-review.md`.
 Wynik: **zgodne**. Kolumny `ID | REQ | Opis | Powód | Wybrany wariant | Data | Decyzja zleceniodawcy` są sprawdzane przez req-check (`test_req_21_011_deviation_needs_approved_entry`).
 
 ## REQ-19-020 … REQ-19-024, REQ-20-011, REQ-21-012 — CI
-Procedura: przebieg GitHub Actions workflow `CI` na `main` (repozytorium prywatne ArturMWnuk/burncraft), run **40670642608**, commit `12cfd2d`, 2026-10-28.
+Procedura: przebieg GitHub Actions workflow `CI` na `main` (prywatne repozytorium sprzed otwarcia projektu, dziś archiwum `ArturMWnuk/burncraft-history`; tam są wymienione commity i przebiegi), run **40670642608**, commit `12cfd2d`, 2026-10-28.
 Każde zadanie wykonuje fmt --check, clippy -D warnings, cargo test, testy req-check i req-check z logami testów.
 Wynik: **zgodne**, wszystkie zadania success:
 - REQ-19-020 Windows (`windows-latest`) — 3 min 49 s
