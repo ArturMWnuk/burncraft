@@ -48,6 +48,23 @@ pub enum TransportSpec {
     },
     /// WebSocket (FluidNC, ESP3D), np. ws://192.168.4.1:81.
     Websocket { url: String },
+    /// USB bulk (REQ-13-019), np. CH341 K40 `1a86:5512`; interfejs i punkty końcowe z rodziny
+    /// urządzenia, chyba że podane.
+    Usb {
+        vid: u16,
+        pid: u16,
+        /// Numer seryjny, gdy podłączonych jest kilka takich samych urządzeń.
+        #[serde(default)]
+        serial: Option<String>,
+    },
+    /// UDP (REQ-13-023), np. Ruida: port docelowy 50200, lokalny 40200.
+    Udp {
+        host: String,
+        port: u16,
+        /// Port lokalny (brak = dowolny wolny).
+        #[serde(default)]
+        local_port: Option<u16>,
+    },
     /// Emulator GRBL w procesie (urządzenie fikcyjne).
     Emulator {
         /// Odmiana z tabeli (grbl11, grblhal, fluidnc, …).
@@ -75,6 +92,8 @@ impl TransportSpec {
             TransportSpec::Serial { port, baud } => format!("serial {port} @ {baud}"),
             TransportSpec::Tcp { host, port } => format!("tcp {host}:{port}"),
             TransportSpec::Websocket { url } => format!("websocket {url}"),
+            TransportSpec::Usb { vid, pid, .. } => format!("usb {vid:04x}:{pid:04x}"),
+            TransportSpec::Udp { host, port, .. } => format!("udp {host}:{port}"),
             TransportSpec::Emulator { variant, .. } => format!("emulator {variant}"),
         }
     }
@@ -229,6 +248,38 @@ impl Transport for TcpTransport {
 
     fn describe(&self) -> String {
         format!("tcp {}", self.name)
+    }
+}
+
+// ---------- UDP ----------
+
+/// UDP (REQ-13-023): każdy zapis to jeden datagram; odczyt zwraca kolejne bajty odebranych
+/// datagramów.
+pub struct UdpTransport {
+    name: String,
+}
+
+impl UdpTransport {
+    pub fn connect(
+        host: &str,
+        port: u16,
+        _local_port: Option<u16>,
+    ) -> Result<Self, TransportError> {
+        Err(TransportError(format!("{host}:{port}: UDP niedostępne")))
+    }
+}
+
+impl Transport for UdpTransport {
+    fn write(&mut self, _data: &[u8]) -> Result<(), TransportError> {
+        Err(TransportError("UDP niedostępne".into()))
+    }
+
+    fn read(&mut self, _buf: &mut [u8], _timeout: Duration) -> Result<usize, TransportError> {
+        Err(TransportError("UDP niedostępne".into()))
+    }
+
+    fn describe(&self) -> String {
+        format!("udp {}", self.name)
     }
 }
 

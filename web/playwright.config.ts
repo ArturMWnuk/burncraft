@@ -34,5 +34,7 @@ export default defineConfig({
     stdout: "ignore",
     stderr: "pipe",
     timeout: 60_000,
+    // urządzenia fikcyjne USB (K40 bez sterownika, galvo) dla testów kreatora USB
+    env: { BURNCRAFT_FAKE_USB: "1" },
   },
 });

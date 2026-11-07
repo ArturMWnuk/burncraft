@@ -154,3 +154,13 @@ fn req_13_029_cli_device_option_and_network_emulator() {
     let j: serde_json::Value = serde_json::from_slice(&o.stdout).unwrap();
     assert_eq!(j["status"], "done");
 }
+
+#[test]
+fn req_13_021_cli_prints_udev_rules() {
+    // `burncraft-cli udev` wypisuje reguły do zapisania w /etc/udev/rules.d
+    let o = cli().arg("udev").output().unwrap();
+    assert!(o.status.success(), "{}", String::from_utf8_lossy(&o.stderr));
+    let out = String::from_utf8_lossy(&o.stdout).replace("\r\n", "\n");
+    assert_eq!(out, bc_drivers::usb::udev_rules());
+    assert!(out.contains("ATTRS{idVendor}==\"1a86\""));
+}

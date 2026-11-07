@@ -126,6 +126,19 @@ impl DeviceProfile {
 pub trait Opener: Send + Sync {
     fn open(&self, spec: &TransportSpec) -> Result<Box<dyn Transport>, TransportError>;
     fn ports(&self) -> Vec<PortInfo>;
+    /// Dostęp do USB (REQ-13-019); domyślnie brak.
+    fn usb(&self) -> Arc<dyn crate::usb::UsbBackend> {
+        Arc::new(crate::usb::NoUsb)
+    }
+}
+
+/// Otwiera transport: USB przez [`Opener::usb`] danego otwierającego, pozostałe jak
+/// [`SystemOpener`].
+pub fn open_spec<O: Opener + ?Sized>(
+    _o: &O,
+    spec: &TransportSpec,
+) -> Result<Box<dyn Transport>, TransportError> {
+    SystemOpener.open(spec)
 }
 
 /// Otwieranie prawdziwych portów, sieci i emulatorów w procesie.
@@ -137,6 +150,16 @@ impl Opener for SystemOpener {
             TransportSpec::Serial { port, baud } => Box::new(SerialTransport::open(port, *baud)?),
             TransportSpec::Tcp { host, port } => Box::new(TcpTransport::connect(host, *port)?),
             TransportSpec::Websocket { url } => Box::new(WsTransport::connect(url)?),
+            TransportSpec::Udp {
+                host,
+                port,
+                local_port,
+            } => Box::new(UdpTransport::connect(host, *port, *local_port)?),
+            TransportSpec::Usb { vid, pid, .. } => {
+                return Err(TransportError(format!(
+                    "USB {vid:04x}:{pid:04x}: niedostępne"
+                )))
+            }
             TransportSpec::Emulator { variant, speed } => {
                 let mut cfg = EmuConfig::variant(variant);
                 cfg.speed = speed.unwrap_or(f64::INFINITY);
@@ -237,6 +260,15 @@ pub struct Found {
     pub error: Option<String>,
     /// Gotowy profil do zapisu.
     pub profile: Option<DeviceProfile>,
+}
+
+/// Urządzenie USB znalezione przez kreator (REQ-13-193): rodzina po VID/PID, stan dostępu
+/// i przewodnik instalacji sterownika albo uprawnień.
+#[derive(Debug, Clone, PartialEq, Serialize, JsonSchema)]
+pub struct UsbFound {
+    pub device: crate::usb::UsbDeviceInfo,
+    pub family: Option<crate::usb::UsbFamily>,
+    pub guide: crate::usb::UsbGuide,
 }
 
 /// Urządzenia: profile i połączenia (współdzielone przez zakładki).
@@ -538,6 +570,11 @@ impl Machines {
 
     pub fn connected_profile(&self, name: &str) -> Option<&DeviceProfile> {
         self.connected_profiles.get(name)
+    }
+
+    /// Kreator „Znajdź mój laser”: urządzenia USB znanych rodzin laserów (REQ-13-193).
+    pub fn find_usb(&self) -> Vec<UsbFound> {
+        Vec::new()
     }
 
     /// Kreator „Znajdź mój laser”: porty z VID/PID i próba GRBL na znanych prędkościach.

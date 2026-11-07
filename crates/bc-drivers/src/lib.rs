@@ -11,6 +11,7 @@ pub mod gcode;
 pub mod grbl;
 pub mod machines;
 pub mod transport;
+pub mod usb;
 pub mod xmodem;
 
 pub use driver::{Driver, DriverError};
