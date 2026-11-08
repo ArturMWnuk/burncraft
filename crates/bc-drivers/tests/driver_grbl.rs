@@ -340,6 +340,36 @@ fn req_13_011_012_pause_resume_stop() {
 }
 
 #[test]
+fn req_13_011_012_stop_before_io_thread_starts_job() {
+    // wyścig z CI (req_15_072_stop_job_always_allowed, CI 42488075278): `send_job` oznacza
+    // zadanie „w toku” od razu, a wątek I/O odbiera je z kanału dopiero w kolejnym obiegu.
+    // Stop w tym czasie: reset idzie przed zadaniem, więc zadanie nie może wystartować
+    // po resecie ani nadpisać stanu „zatrzymane”.
+    let mut cfg = EmuConfig::default();
+    cfg.speed = 1.0;
+    let e = emu(cfg);
+    let mut d = connect(&e);
+    let f = file(&rect_doc());
+    for _ in 0..3 {
+        {
+            // emulator zablokowany: wątek I/O stoi w odczycie/zapisie, poza odbiorem z kanału
+            let _held = e.lock().unwrap();
+            std::thread::sleep(Duration::from_millis(30));
+            d.send_job(&f, JobOptions::default()).unwrap();
+            assert_eq!(d.job().status, JobStatus::Running);
+            d.stop();
+            assert_eq!(d.job().status, JobStatus::Stopped);
+        }
+        std::thread::sleep(Duration::from_millis(300));
+        assert_eq!(d.job().status, JobStatus::Stopped, "zadanie po stopie");
+        assert_eq!(e.lock().unwrap().planner_len(), 0, "ruch po stopie");
+        assert!(burn_len(&e) < 1e-9, "wiązka po stopie: {}", burn_len(&e));
+        d.unlock().ok();
+        std::thread::sleep(Duration::from_millis(50));
+    }
+}
+
+#[test]
 fn req_13_078_feed_and_power_overrides() {
     let mut cfg = EmuConfig::default();
     cfg.speed = 3.0;
