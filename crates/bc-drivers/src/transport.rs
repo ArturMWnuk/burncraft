@@ -65,9 +65,15 @@ pub enum TransportSpec {
         #[serde(default)]
         local_port: Option<u16>,
     },
-    /// Emulator GRBL w procesie (urządzenie fikcyjne).
+    /// Sterownik producenta CH341DLL na Windows (K40 Lihuiyu/Moshi, REQ-13-040):
+    /// urządzenie nr `index` (0 = pierwsze).
+    Ch341Dll {
+        #[serde(default)]
+        index: u32,
+    },
+    /// Emulator w procesie (urządzenie fikcyjne): GRBL albo płyta K40 (lihuiyu, moshi).
     Emulator {
-        /// Odmiana z tabeli (grbl11, grblhal, fluidnc, …).
+        /// Odmiana GRBL z tabeli (grbl11, grblhal, fluidnc, …) albo `lihuiyu` / `moshi`.
         #[serde(default = "d_variant")]
         variant: String,
         /// Mnożnik czasu (brak = natychmiast).
@@ -94,6 +100,7 @@ impl TransportSpec {
             TransportSpec::Websocket { url } => format!("websocket {url}"),
             TransportSpec::Usb { vid, pid, .. } => format!("usb {vid:04x}:{pid:04x}"),
             TransportSpec::Udp { host, port, .. } => format!("udp {host}:{port}"),
+            TransportSpec::Ch341Dll { index } => format!("ch341dll {index}"),
             TransportSpec::Emulator { variant, .. } => format!("emulator {variant}"),
         }
     }

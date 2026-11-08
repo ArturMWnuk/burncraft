@@ -73,7 +73,15 @@ fn req_13_191_196_028_profiles_connect_select() {
         .iter()
         .map(|p| p["name"].as_str().unwrap())
         .collect();
-    assert_eq!(names, vec!["Symulator", "Szybki"]);
+    assert_eq!(
+        names,
+        vec![
+            "Symulator",
+            "Symulator K40 (Lihuiyu)",
+            "Symulator Moshi",
+            "Szybki"
+        ]
+    );
     assert!(l["variants"].as_array().unwrap().len() >= 19);
     // bez urządzenia: no_device
     assert_eq!(

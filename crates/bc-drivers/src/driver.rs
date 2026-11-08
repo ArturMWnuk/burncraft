@@ -25,6 +25,8 @@ pub struct Caps {
     pub overrides: bool,
     /// Jog z anulowaniem (`$J=`).
     pub jog: bool,
+    /// Regulacja mocy z programu (PWM); brak = moc z pokrętła lasera (K40 M2 Nano, REQ-13-045).
+    pub pwm: bool,
 }
 
 /// Stan maszyny (REQ-13-003).

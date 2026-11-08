@@ -5,11 +5,15 @@
 //! wynik (`MachineFile`) to zarówno plik do zapisu, jak i strumień wierszy do maszyny.
 //! Trait `Driver`, transporty i emulator GRBL dochodzą w M2.3 (ADR 0010).
 
+pub mod ch341;
 pub mod driver;
 pub mod emu;
 pub mod gcode;
 pub mod grbl;
+pub mod lihuiyu;
 pub mod machines;
+pub(crate) mod md5;
+pub mod moshi;
 pub mod transport;
 pub mod usb;
 pub mod xmodem;
@@ -28,13 +32,11 @@ use sha2::{Digest, Sha256};
 pub const MODULE: &str = "bc-drivers";
 
 /// Sterowniki z kompilatorem w tej wersji.
-pub const DRIVERS: &[&str] = &["grbl", "gcode"];
+pub const DRIVERS: &[&str] = &["grbl", "gcode", "lihuiyu", "moshi"];
 
 /// Sterowniki planowane w kolejnych etapach (nazwa, etap).
 pub const PLANNED_DRIVERS: &[(&str, &str)] = &[
     ("ruida", "M3"),
-    ("lihuiyu", "M3"),
-    ("moshi", "M3"),
     ("trocen", "M3"),
     ("marlin", "M3"),
     ("smoothie", "M3"),
@@ -101,6 +103,35 @@ impl MachineFile {
     }
 
     /// Treść tekstowa (G-code jest w ASCII).
+    /// Plik binarny albo strumień bez podziału na wiersze G-code (EGV, Moshi);
+    /// `lines` = liczba znaków nowej linii (EGV) albo programów (Moshi).
+    pub(crate) fn from_bytes(
+        driver: &str,
+        extension: &'static str,
+        bytes: Vec<u8>,
+        time_s: f64,
+        warnings: Vec<CompileWarning>,
+    ) -> Self {
+        let hash = Sha256::digest(&bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        let lines = if driver == "moshi" {
+            moshi::proto::programs(&bytes).map_or(0, |p| p.len())
+        } else {
+            bytes.iter().filter(|b| **b == b'\n').count()
+        };
+        MachineFile {
+            driver: driver.into(),
+            extension,
+            lines,
+            bytes,
+            hash,
+            time_s,
+            warnings,
+        }
+    }
+
     pub fn text(&self) -> &str {
         std::str::from_utf8(&self.bytes).unwrap_or_default()
     }
@@ -122,7 +153,7 @@ pub enum CompileError {
 }
 
 /// Wszystko poza zadaniem, czego potrzebuje kompilator (ADR 0011 §1).
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Context {
     /// Nazwa zadania (pole `{name}` szablonów).
     pub name: String,
@@ -132,11 +163,31 @@ pub struct Context {
     pub kinematics: Kinematics,
     /// Makra warstw: indeks → (pre, post) (REQ-13-107).
     pub layer_macros: BTreeMap<u8, (String, String)>,
+    /// Płyta K40 (Lihuiyu, Moshi): wariant, kroki/mm, korekcja skali (REQ-13-046, 047).
+    pub k40: lihuiyu::K40Settings,
+    /// Obszar roboczy maszyny [szerokość, wysokość], mm — K40 bazuje w lewym górnym rogu.
+    pub bed: [f64; 2],
+}
+
+impl Default for Context {
+    fn default() -> Self {
+        Context {
+            name: String::new(),
+            settings: GcodeSettings::default(),
+            start: StartSettings::default(),
+            kinematics: Kinematics::default(),
+            layer_macros: BTreeMap::new(),
+            k40: lihuiyu::K40Settings::default(),
+            bed: lihuiyu::BED,
+        }
+    }
 }
 
 impl Context {
     pub fn from_document(doc: &Document) -> Self {
         Context {
+            k40: lihuiyu::K40Settings::default(),
+            bed: [doc.workspace.width, doc.workspace.height],
             name: doc.name.clone(),
             settings: doc.gcode.clone(),
             start: doc.start,
@@ -176,10 +227,15 @@ pub fn compiler(driver: &str) -> Result<Box<dyn JobCompiler>, CompileError> {
     match driver {
         "grbl" => Ok(Box::new(gcode::GcodeCompiler::new(gcode::Dialect::Grbl))),
         "gcode" => Ok(Box::new(gcode::GcodeCompiler::new(gcode::Dialect::Generic))),
+        "lihuiyu" => Ok(Box::new(lihuiyu::egv::EgvCompiler)),
+        "moshi" => Ok(Box::new(moshi::proto::MoshiCompiler)),
         other => Err(CompileError::UnsupportedDriver(
             match PLANNED_DRIVERS.iter().find(|(n, _)| *n == other) {
-                Some((n, ms)) => format!("{n} (kompilator w etapie {ms}; dostępne: grbl, gcode)"),
-                None => format!("{other} (dostępne: grbl, gcode)"),
+                Some((n, ms)) => format!(
+                    "{n} (kompilator w etapie {ms}; dostępne: {})",
+                    DRIVERS.join(", ")
+                ),
+                None => format!("{other} (dostępne: {})", DRIVERS.join(", ")),
             },
         )),
     }

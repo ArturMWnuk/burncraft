@@ -17,6 +17,12 @@ use crate::transport::*;
 
 /// Nazwa urządzenia fikcyjnego (zawsze dostępne, REQ-13-191).
 pub const SIMULATOR: &str = "Symulator";
+/// Urządzenie fikcyjne K40 z emulatorem płyty Lihuiyu M2 Nano (REQ-19-009).
+pub const SIMULATOR_K40: &str = "Symulator K40 (Lihuiyu)";
+/// Urządzenie fikcyjne z emulatorem płyty Moshi MS10105.
+pub const SIMULATOR_MOSHI: &str = "Symulator Moshi";
+/// Nazwy zarezerwowane dla urządzeń fikcyjnych.
+pub const SIMULATORS: &[&str] = &[SIMULATOR, SIMULATOR_K40, SIMULATOR_MOSHI];
 
 /// Profil urządzenia (REQ-13-196).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, JsonSchema)]
@@ -24,7 +30,7 @@ pub const SIMULATOR: &str = "Symulator";
 pub struct DeviceProfile {
     /// Nazwa (unikalna, `--device "Nazwa"`).
     pub name: String,
-    /// Sterownik: grbl (rodzina GRBL i odmiany).
+    /// Sterownik: grbl (rodzina GRBL i odmiany), lihuiyu (K40), moshi.
     #[serde(default = "d_driver")]
     pub driver: String,
     /// Odmiana z tabeli (pusta = rozpoznanie przy połączeniu).
@@ -50,6 +56,9 @@ pub struct DeviceProfile {
     /// Prędkość ramki, mm/s.
     #[serde(default = "d_frame_speed")]
     pub frame_speed: f64,
+    /// Płyta K40 (sterowniki lihuiyu i moshi): wariant, ID, kroki/mm, korekcja skali.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub k40: Option<crate::lihuiyu::K40Settings>,
 }
 
 fn d_driver() -> String {
@@ -79,6 +88,58 @@ impl DeviceProfile {
             pointer_on: String::new(),
             pointer_off: String::new(),
             frame_speed: d_frame_speed(),
+            k40: None,
+        }
+    }
+
+    /// Urządzenie fikcyjne K40 (emulator Lihuiyu M2 Nano, stół 310 × 210 mm).
+    pub fn simulator_k40() -> Self {
+        DeviceProfile {
+            name: SIMULATOR_K40.into(),
+            driver: "lihuiyu".into(),
+            variant: None,
+            transport: TransportSpec::Emulator {
+                variant: "lihuiyu".into(),
+                speed: Some(1.0),
+            },
+            workspace: crate::lihuiyu::BED,
+            k40: Some(crate::lihuiyu::K40Settings::default()),
+            ..DeviceProfile::simulator()
+        }
+    }
+
+    /// Urządzenie fikcyjne Moshi (emulator MS10105, stół 330 × 210 mm).
+    pub fn simulator_moshi() -> Self {
+        DeviceProfile {
+            name: SIMULATOR_MOSHI.into(),
+            driver: "moshi".into(),
+            variant: None,
+            transport: TransportSpec::Emulator {
+                variant: "moshi".into(),
+                speed: Some(1.0),
+            },
+            workspace: crate::moshi::BED,
+            k40: Some(crate::lihuiyu::K40Settings::default()),
+            ..DeviceProfile::simulator()
+        }
+    }
+
+    /// Sterownik płyty K40 (lihuiyu albo moshi).
+    pub fn is_k40(&self) -> bool {
+        matches!(self.driver.as_str(), "lihuiyu" | "moshi")
+    }
+
+    /// Ustawienia płyty K40 (domyślne, gdy brak w profilu).
+    pub fn k40_settings(&self) -> crate::lihuiyu::K40Settings {
+        self.k40.clone().unwrap_or_default()
+    }
+
+    /// Regulacja mocy z programu (PWM) — bez połączenia, z profilu (REQ-13-045).
+    pub fn pwm(&self) -> bool {
+        match self.driver.as_str() {
+            "lihuiyu" => self.k40_settings().board.pwm(),
+            "moshi" => false,
+            _ => true,
         }
     }
 
@@ -86,11 +147,28 @@ impl DeviceProfile {
         if self.name.trim().is_empty() || self.name.len() > 80 {
             return Err("name: 1–80 znaków".into());
         }
-        if self.driver != "grbl" {
+        if !matches!(self.driver.as_str(), "grbl" | "lihuiyu" | "moshi") {
             return Err(format!(
-                "driver {}: w M2 dostępny grbl (Ruida, Lihuiyu — M3)",
+                "driver {}: dostępne grbl, lihuiyu (K40), moshi",
                 self.driver
             ));
+        }
+        if let Some(k) = &self.k40 {
+            k.validate()?;
+        }
+        if self.is_k40() {
+            match &self.transport {
+                TransportSpec::Usb { .. } | TransportSpec::Ch341Dll { .. } => {}
+                TransportSpec::Emulator { variant, .. } if *variant == self.driver => {}
+                _ => {
+                    return Err(format!(
+                        "transport: sterownik {} łączy się przez USB CH341 (usb, ch341_dll) albo emulator {}",
+                        self.driver, self.driver
+                    ))
+                }
+            }
+        } else if matches!(self.transport, TransportSpec::Ch341Dll { .. }) {
+            return Err("transport ch341_dll: tylko sterowniki lihuiyu i moshi".into());
         }
         if let Some(v) = &self.variant {
             if crate::grbl::codes::variant(v).is_none() {
@@ -109,7 +187,7 @@ impl DeviceProfile {
             return Err("frame_speed: > 0".into());
         }
         if let TransportSpec::Emulator { variant, speed } = &self.transport {
-            if crate::grbl::codes::variant(variant).is_none() {
+            if !self.is_k40() && crate::grbl::codes::variant(variant).is_none() {
                 return Err(format!("transport.variant {variant}: nieznana odmiana"));
             }
             if speed.is_some_and(|s| s.is_nan() || s <= 0.0) {
@@ -165,6 +243,19 @@ impl Opener for SystemOpener {
                 &*self.usb(),
                 &crate::usb::UsbSelector::for_device(*vid, *pid, serial.clone()),
             )?),
+            TransportSpec::Ch341Dll { .. } => {
+                return Err(TransportError(
+                    "ch341_dll: dostęp płyty K40 (sterowniki lihuiyu, moshi), nie strumień bajtów"
+                        .into(),
+                ))
+            }
+            TransportSpec::Emulator { variant, .. }
+                if crate::grbl::codes::variant(variant).is_none() =>
+            {
+                return Err(TransportError(format!(
+                    "emulator {variant}: nie jest odmianą GRBL"
+                )))
+            }
             TransportSpec::Emulator { variant, speed } => {
                 let mut cfg = EmuConfig::variant(variant);
                 cfg.speed = speed.unwrap_or(f64::INFINITY);
@@ -455,13 +546,17 @@ impl Machines {
         Ok(())
     }
 
-    /// Profile (z urządzeniem fikcyjnym na początku).
+    /// Profile (z urządzeniami fikcyjnymi na początku: GRBL, K40 Lihuiyu, Moshi).
     pub fn profiles(&self) -> Vec<DeviceProfile> {
-        let mut v = vec![DeviceProfile::simulator()];
+        let mut v = vec![
+            DeviceProfile::simulator(),
+            DeviceProfile::simulator_k40(),
+            DeviceProfile::simulator_moshi(),
+        ];
         v.extend(
             self.profiles
                 .iter()
-                .filter(|p| p.name != SIMULATOR)
+                .filter(|p| !SIMULATORS.contains(&p.name.as_str()))
                 .cloned(),
         );
         v
@@ -474,9 +569,10 @@ impl Machines {
     /// Dodaje albo zastępuje profil (REQ-13-196).
     pub fn save_profile(&mut self, p: DeviceProfile) -> Result<(), String> {
         p.validate()?;
-        if p.name == SIMULATOR {
+        if SIMULATORS.contains(&p.name.as_str()) {
             return Err(format!(
-                "{SIMULATOR}: nazwa zarezerwowana dla urządzenia fikcyjnego"
+                "{}: nazwa zarezerwowana dla urządzenia fikcyjnego",
+                p.name
             ));
         }
         match self.profiles.iter_mut().find(|q| q.name == p.name) {
@@ -506,24 +602,92 @@ impl Machines {
         let p = self
             .profile(name)
             .ok_or_else(|| DriverError::Invalid(format!("nieznane urządzenie {name}")))?;
-        let t = self
-            .opener
-            .open(&p.transport)
-            .map_err(|e| DriverError::Transport(e.0))?;
-        let d = GrblDriver::connect(
-            &p.name,
-            t,
-            GrblOptions {
-                stream: p.stream,
-                s_max: p.s_max,
-                variant: p.variant.clone(),
-                ..Default::default()
-            },
-        )?;
-        self.connected.insert(name.into(), Box::new(d));
+        let d: Box<dyn Driver> = match p.driver.as_str() {
+            "lihuiyu" => {
+                let dev = self.open_ch341(&p)?;
+                Box::new(crate::lihuiyu::LihuiyuDriver::connect(
+                    &p.name,
+                    dev,
+                    crate::lihuiyu::LihuiyuOptions {
+                        settings: p.k40_settings(),
+                        bed: p.workspace,
+                    },
+                )?)
+            }
+            "moshi" => {
+                let dev = self.open_ch341(&p)?;
+                Box::new(crate::moshi::MoshiDriver::connect(
+                    &p.name,
+                    dev,
+                    crate::moshi::MoshiOptions {
+                        settings: p.k40_settings(),
+                        bed: p.workspace,
+                    },
+                )?)
+            }
+            _ => {
+                let t = self
+                    .opener
+                    .open(&p.transport)
+                    .map_err(|e| DriverError::Transport(e.0))?;
+                Box::new(GrblDriver::connect(
+                    &p.name,
+                    t,
+                    GrblOptions {
+                        stream: p.stream,
+                        s_max: p.s_max,
+                        variant: p.variant.clone(),
+                        ..Default::default()
+                    },
+                )?)
+            }
+        };
+        self.connected.insert(name.into(), d);
         self.connected_profiles.insert(name.into(), p);
         self.refresh_kinematics(name);
         Ok(())
+    }
+
+    /// Dostęp CH341 dla profilu K40: USB natywnie (REQ-13-039), sterownik CH341DLL
+    /// (REQ-13-040) albo emulator płyty (urządzenie fikcyjne, REQ-19-009).
+    pub fn open_ch341(
+        &self,
+        p: &DeviceProfile,
+    ) -> Result<Box<dyn crate::ch341::Ch341>, DriverError> {
+        let tr = |e: TransportError| DriverError::Transport(e.0);
+        let k = p.k40_settings();
+        Ok(match &p.transport {
+            TransportSpec::Usb { vid, pid, serial } => Box::new(
+                crate::ch341::Ch341Usb::open(
+                    &*self.opener.usb(),
+                    &crate::usb::UsbSelector::for_device(*vid, *pid, serial.clone()),
+                )
+                .map_err(tr)?,
+            ),
+            TransportSpec::Ch341Dll { index } => {
+                Box::new(crate::ch341::Ch341Dll::open(*index).map_err(tr)?)
+            }
+            TransportSpec::Emulator { variant, speed } if variant == "lihuiyu" => Box::new(
+                crate::lihuiyu::emu::LihuiyuEmulator::new(crate::lihuiyu::emu::EmuConfig {
+                    board: k.board,
+                    serial: k.board_id.clone(),
+                    speed: speed.unwrap_or(f64::INFINITY),
+                    ..Default::default()
+                }),
+            ),
+            TransportSpec::Emulator { variant, speed } if variant == "moshi" => Box::new(
+                crate::moshi::emu::MoshiEmulator::new(crate::moshi::emu::EmuConfig {
+                    speed: speed.unwrap_or(f64::INFINITY),
+                }),
+            ),
+            t => {
+                return Err(DriverError::Invalid(format!(
+                    "{}: {} łączy się przez USB CH341 albo emulator",
+                    t.describe(),
+                    p.driver
+                )))
+            }
+        })
     }
 
     /// Odczyt kinematyki z ustawień podłączonej maszyny (po połączeniu i zapisie `$$`).

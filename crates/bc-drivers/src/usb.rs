@@ -160,6 +160,32 @@ pub trait UsbBulk: Send {
     fn write(&mut self, data: &[u8], timeout: Duration) -> Result<usize, TransportError>;
     /// 0 bajtów = brak danych w czasie `timeout`.
     fn read(&mut self, buf: &mut [u8], timeout: Duration) -> Result<usize, TransportError>;
+    /// Żądanie sterujące vendor OUT do urządzenia (CH341: tryb portu równoległego).
+    fn control_out(
+        &mut self,
+        request: u8,
+        value: u16,
+        index: u16,
+        data: &[u8],
+    ) -> Result<(), TransportError> {
+        let _ = (value, index, data);
+        Err(TransportError(format!(
+            "żądanie sterujące 0x{request:02X}: nieobsługiwane"
+        )))
+    }
+    /// Żądanie sterujące vendor IN z urządzenia (CH341: stan, wersja).
+    fn control_in(
+        &mut self,
+        request: u8,
+        value: u16,
+        index: u16,
+        len: u16,
+    ) -> Result<Vec<u8>, TransportError> {
+        let _ = (value, index, len);
+        Err(TransportError(format!(
+            "żądanie sterujące 0x{request:02X}: nieobsługiwane"
+        )))
+    }
 }
 
 /// Dostęp do USB (system albo urządzenie fikcyjne).
@@ -319,6 +345,7 @@ impl UsbBackend for NusbBackend {
             .endpoint::<Bulk, In>(sel.ep_in)
             .map_err(|e| nusb_err(sel, e))?;
         Ok(Box::new(NusbBulk {
+            iface,
             out,
             inp,
             pending: VecDeque::new(),
@@ -327,6 +354,7 @@ impl UsbBackend for NusbBackend {
 }
 
 struct NusbBulk {
+    iface: nusb::Interface,
     out: nusb::Endpoint<nusb::transfer::Bulk, nusb::transfer::Out>,
     inp: nusb::Endpoint<nusb::transfer::Bulk, nusb::transfer::In>,
     pending: VecDeque<u8>,
@@ -366,6 +394,56 @@ impl UsbBulk for NusbBulk {
             buf[i] = b;
         }
         Ok(n)
+    }
+
+    fn control_out(
+        &mut self,
+        request: u8,
+        value: u16,
+        index: u16,
+        data: &[u8],
+    ) -> Result<(), TransportError> {
+        use nusb::transfer::{ControlOut, ControlType, Recipient};
+        use nusb::MaybeFuture;
+        self.iface
+            .control_out(
+                ControlOut {
+                    control_type: ControlType::Vendor,
+                    recipient: Recipient::Device,
+                    request,
+                    value,
+                    index,
+                    data,
+                },
+                Duration::from_millis(1500),
+            )
+            .wait()
+            .map_err(transfer_err)
+    }
+
+    fn control_in(
+        &mut self,
+        request: u8,
+        value: u16,
+        index: u16,
+        len: u16,
+    ) -> Result<Vec<u8>, TransportError> {
+        use nusb::transfer::{ControlIn, ControlType, Recipient};
+        use nusb::MaybeFuture;
+        self.iface
+            .control_in(
+                ControlIn {
+                    control_type: ControlType::Vendor,
+                    recipient: Recipient::Device,
+                    request,
+                    value,
+                    index,
+                    length: len,
+                },
+                Duration::from_millis(1500),
+            )
+            .wait()
+            .map_err(transfer_err)
     }
 }
 

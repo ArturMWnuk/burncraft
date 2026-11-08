@@ -82,7 +82,15 @@ fn req_15_058_list_devices() {
         .iter()
         .map(|p| p["name"].as_str().unwrap())
         .collect();
-    assert_eq!(names, vec!["Symulator", "Szybki"]);
+    assert_eq!(
+        names,
+        vec![
+            "Symulator",
+            "Symulator K40 (Lihuiyu)",
+            "Symulator Moshi",
+            "Szybki"
+        ]
+    );
     assert_eq!(l["connected"], json!([]));
     assert_eq!(l["selected"], Value::Null);
     c.finish().unwrap();

@@ -903,6 +903,7 @@ impl Driver for GrblDriver {
             lid_sensor: true,
             overrides: v.overrides,
             jog: v.jog,
+            pwm: true,
         }
     }
 
