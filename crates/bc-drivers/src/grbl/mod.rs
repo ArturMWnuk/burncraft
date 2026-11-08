@@ -302,6 +302,13 @@ impl Io {
     fn end_job(&mut self, status: JobStatus) {
         if self.job.take().is_some() {
             let mut j = self.shared.job.lock().expect("zadanie");
+            // `stop()` ustawia Stopped poza wątkiem I/O; koniec rundy przetworzony tuż po nim
+            // nie może zamienić zatrzymanego zadania na zakończone (wyścig widoczny w CI)
+            let status = if j.status == JobStatus::Stopped {
+                JobStatus::Stopped
+            } else {
+                status
+            };
             j.status = status.clone();
             if status != JobStatus::Done {
                 self.queue.clear();
@@ -521,6 +528,13 @@ impl Io {
     }
 
     fn round_done(&mut self) {
+        if self.job.is_some()
+            && self.shared.job.lock().expect("zadanie").status == JobStatus::Stopped
+        {
+            // zatrzymane w trakcie: bez kolejnej rundy i bez zadań z kolejki
+            self.end_job(JobStatus::Stopped);
+            return;
+        }
         let Some(job) = &mut self.job else { return };
         if job.round < job.opts.repeat.max(1) {
             job.round += 1;
