@@ -60,7 +60,7 @@ fn d_driver() -> String {
 #[derive(Deserialize, JsonSchema)]
 #[serde(deny_unknown_fields)]
 struct CompileParams {
-    /// Sterownik: grbl (domyślnie) albo gcode (ogólny CNC).
+    /// Sterownik: grbl (domyślnie), gcode (ogólny CNC), lihuiyu (EGV dla K40) albo moshi.
     #[serde(default = "d_driver")]
     driver: String,
     /// Tylko zaznaczone obiekty.

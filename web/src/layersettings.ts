@@ -6,7 +6,7 @@
 
 import { h, num, parseNum } from "./dom";
 import { t } from "./i18n";
-import { Layer, Scene } from "./scene";
+import { Layer, Scene, noPwm } from "./scene";
 
 export interface LayerSettingsHost {
   scene: Scene | null;
@@ -234,7 +234,9 @@ export class LayerSettings {
       this.group("layer", this.lset("name", "text"), this.lset("color", "color"),
         this.lset("mode", "select", { options: MODES, optionKey: (m) => `mode-${m}` }),
         this.lset("output", "bool"), this.lset("show", "bool"), this.lset("air_assist", "bool")),
-      this.group("power", this.lset("speed", "num"), this.lset("power_max", "num"), this.lset("power_min", "num"),
+      // brak PWM (K40 M2 Nano): moc z pokrętła lasera — pola mocy nieaktywne (REQ-13-045)
+      this.group("power", this.noPwmNote, this.lset("speed", "num"), this.lset("power_max", "num", { enabled: () => !noPwm(this.host.scene) }),
+        this.lset("power_min", "num", { enabled: () => !noPwm(this.host.scene) }),
         this.lset("passes", "int"), this.par("pass_delay", "num"), this.par("priority", "int"), this.par("pause_message", "opttext")),
     ];
   }
@@ -337,9 +339,15 @@ export class LayerSettings {
   }
 
   /** Wartości pól z dokumentu (pole z fokusem zostaje — użytkownik je edytuje). */
+  /** Komunikat o braku PWM w zakładce Ogólne (REQ-13-045). */
+  private noPwmNote = h("p", { class: "ls-note no-pwm", "data-testid": "ls-no-pwm", role: "note" });
+
   private sync() {
     const l = this.layer();
     if (!this.root || !l) return;
+    const dev = noPwm(this.host.scene);
+    this.noPwmNote.hidden = !dev;
+    this.noPwmNote.textContent = dev ? t("power-no-pwm", { device: dev.name, board: dev.board ?? dev.driver }) : "";
     this.title.textContent = t("ls-title", { name: l.name });
     this.syncLists();
     for (const f of this.fields) {

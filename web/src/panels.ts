@@ -3,7 +3,7 @@
 
 import { h, num, parseNum } from "./dom";
 import { t } from "./i18n";
-import { Layer, Scene, selectionBox } from "./scene";
+import { DeviceInfo, Layer, Scene, noPwm, selectionBox } from "./scene";
 import { fmtLen, parseLen } from "./units";
 
 export interface Host {
@@ -373,7 +373,8 @@ export class Panels {
           }),
         ),
     );
-    const rows = s.layers.filter((l) => used.has(l.index)).map((l) => this.layerRow(l));
+    const dev = noPwm(s);
+    const rows = s.layers.filter((l) => used.has(l.index)).map((l) => this.layerRow(l, dev));
     const cols = ["", "layers-col-name", "layers-col-mode", "layers-col-speed", "layers-col-power", "layers-col-passes", "layers-col-output", "layers-col-show"];
     const table = h(
       "table",
@@ -381,10 +382,12 @@ export class Panels {
       h("thead", {}, h("tr", {}, ...cols.map((k) => h("th", { class: ADVANCED_COLS.has(k) ? "adv" : "" }, k ? t(k) : "")))),
       h("tbody", {}, ...rows),
     );
-    this.layers.body.replaceChildren(palette, rows.length ? table : h("p", { class: "empty" }, t("layers-empty")));
+    // brak PWM (K40 M2 Nano, Moshi): moc ustawia pokrętło lasera (REQ-13-045)
+    const note = dev ? h("p", { class: "note no-pwm", "data-testid": "layers-no-pwm", role: "note" }, t("power-no-pwm", { device: dev.name, board: dev.board ?? dev.driver })) : null;
+    this.layers.body.replaceChildren(palette, ...(note ? [note] : []), rows.length ? table : h("p", { class: "empty" }, t("layers-empty")));
   }
 
-  private layerRow(l: Layer): HTMLElement {
+  private layerRow(l: Layer, dev: DeviceInfo | null = null): HTMLElement {
     const set = (p: Record<string, unknown>) => this.host.run("layer.set", { index: l.index, ...p });
     const cell = (v: number, key: string, testid: string, label: string, adv = false) => {
       const i = h("input", { type: "text", inputmode: "decimal", class: "cell", value: num(v), "data-testid": testid, title: label, "aria-label": label });
@@ -417,7 +420,9 @@ export class Panels {
       h("td", {}, l.name),
       h("td", {}, mode),
       cell(l.speed, "speed", `layer-${l.index}-speed`, t("layers-col-speed")),
-      cell(l.power_max, "power_max", `layer-${l.index}-power`, t("layers-col-power")),
+      dev ? h("td", {}, h("input", { type: "text", class: "cell", value: num(l.power_max), disabled: true, "data-testid": `layer-${l.index}-power`,
+        title: t("power-no-pwm-short"), "aria-label": `${t("layers-col-power")}: ${t("power-no-pwm-short")}` }))
+        : cell(l.power_max, "power_max", `layer-${l.index}-power`, t("layers-col-power")),
       cell(l.passes, "passes", `layer-${l.index}-passes`, t("layers-col-passes"), true),
       h("td", {}, h("input", { type: "checkbox", checked: l.output, "aria-label": t("layers-output"), title: t("layers-output"), "data-testid": `layer-${l.index}-output`,
         onchange: (e: Event) => set({ output: (e.target as HTMLInputElement).checked }) })),

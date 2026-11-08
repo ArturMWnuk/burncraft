@@ -77,16 +77,16 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | 10 | 24 | 24 | 0 | 0 | 17 | 0 | 0 | 7 | 0 |
 | 11 | 38 | 31 | 7 | 0 | 1 | 0 | 0 | 36 | 1 |
 | 12 | 26 | 26 | 0 | 0 | 0 | 0 | 0 | 26 | 0 |
-| 13 | 199 | 195 | 2 | 2 | 73 | 0 | 0 | 95 | 31 |
+| 13 | 199 | 195 | 2 | 2 | 92 | 0 | 3 | 73 | 31 |
 | 14 | 32 | 27 | 5 | 0 | 8 | 0 | 0 | 24 | 0 |
 | 15 | 108 | 108 | 0 | 0 | 74 | 0 | 0 | 34 | 0 |
 | 16 | 13 | 13 | 0 | 0 | 7 | 0 | 0 | 6 | 0 |
 | 17 | 7 | 0 | 5 | 2 | 0 | 0 | 0 | 7 | 0 |
 | 18 | 19 | 19 | 0 | 0 | 6 | 0 | 0 | 12 | 1 |
-| 19 | 36 | 36 | 0 | 0 | 15 | 0 | 0 | 19 | 2 |
+| 19 | 36 | 36 | 0 | 0 | 16 | 0 | 0 | 18 | 2 |
 | 20 | 12 | 12 | 0 | 0 | 11 | 0 | 0 | 0 | 1 |
 | 21 | 15 | 15 | 0 | 0 | 14 | 0 | 0 | 1 | 0 |
-| **Razem** | **1144** | 1099 | 41 | 4 | 546 | 0 | 0 | 560 | 38 |
+| **Razem** | **1144** | 1099 | 41 | 4 | 566 | 0 | 3 | 537 | 38 |
 
 ### Etapy
 
@@ -95,7 +95,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | M0 | 112 | 112 | closed |
 | M1 | 202 | 202 | closed |
 | M2 | 227 | 227 | closed |
-| M3 | 66 | 40 | planned |
+| M3 | 66 | 60 | planned |
 | M4 | 170 | 0 | planned |
 | M5 | 108 | 0 | planned |
 | M6 | 168 | 0 | planned |
@@ -906,29 +906,29 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-027 | 13.2 | MUST | M6 | hw | todo | BurnCraft Bridge: RPi laczacy USB/serial/UDP z LAN-em, z obsluga kamer |
 | REQ-13-028 | 13.2 | MUST | M2 | auto | verified | Wieloinstancyjnosc: kilka laserow naraz z jednego komputera |
 | REQ-13-029 | 13.2 | MUST | M2 | auto | verified | Wybor urzadzenia z CLI --device „Nazwa” |
-| REQ-13-030 | 13.3 | MUST | M3 | hw | todo | K40 Lihuiyu: plyta M2 Nano |
-| REQ-13-031 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta M3 Nano |
-| REQ-13-032 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta M1 |
-| REQ-13-033 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta M |
-| REQ-13-034 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta B1 |
-| REQ-13-035 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta B2 |
-| REQ-13-036 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta B |
-| REQ-13-037 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta A |
-| REQ-13-038 | 13.3 | MUST | M3 | emu | todo | K40 Lihuiyu: plyta 6C6879-LASER-M2/M3 |
-| REQ-13-039 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: USB CH341 (1A86:5512) natywnie przez libusb |
-| REQ-13-040 | 13.3 | MUST | M3 | hw | todo | Lihuiyu: alternatywnie przez oryginalny sterownik CH341 DLL (Windows) |
-| REQ-13-041 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: protokol EGV — pakiety 30 bajtow + CRC-8 (Onewire) |
-| REQ-13-042 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: obsluga potwierdzen stanu OK/BUSY/CRC error/task complete |
-| REQ-13-043 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: komendy kierunku/kroku z predkoscia kodowana zaleznie od wariantu plyty |
-| REQ-13-044 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: raster natywny w trybie step mode |
-| REQ-13-045 | 13.3 | MUST | M3 | manual | todo | Lihuiyu: brak PWM — pole mocy nieaktywne, jasny komunikat w UI, zamiast mocy dither/predkosc |
-| REQ-13-046 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: konfiguracja wariantu plyty i ID plyty (serial) |
-| REQ-13-047 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: kroki/mm (1000 dpi) i korekcja skali X/Y |
-| REQ-13-048 | 13.3 | MUST | M3 | emu | todo | Lihuiyu: home, rapid vs ruch powolny, pauza/wznowienie |
-| REQ-13-049 | 13.3 | MUST | M3 | hw | todo | K40 niezmodyfikowany dziala „od pudelka” |
+| REQ-13-030 | 13.3 | MUST | M3 | hw | in_progress | K40 Lihuiyu: plyta M2 Nano |
+| REQ-13-031 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta M3 Nano |
+| REQ-13-032 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta M1 |
+| REQ-13-033 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta M |
+| REQ-13-034 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta B1 |
+| REQ-13-035 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta B2 |
+| REQ-13-036 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta B |
+| REQ-13-037 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta A |
+| REQ-13-038 | 13.3 | MUST | M3 | emu | verified | K40 Lihuiyu: plyta 6C6879-LASER-M2/M3 |
+| REQ-13-039 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: USB CH341 (1A86:5512) natywnie przez libusb |
+| REQ-13-040 | 13.3 | MUST | M3 | hw | in_progress | Lihuiyu: alternatywnie przez oryginalny sterownik CH341 DLL (Windows) |
+| REQ-13-041 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: protokol EGV — pakiety 30 bajtow + CRC-8 (Onewire) |
+| REQ-13-042 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: obsluga potwierdzen stanu OK/BUSY/CRC error/task complete |
+| REQ-13-043 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: komendy kierunku/kroku z predkoscia kodowana zaleznie od wariantu plyty |
+| REQ-13-044 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: raster natywny w trybie step mode |
+| REQ-13-045 | 13.3 | MUST | M3 | manual | verified | Lihuiyu: brak PWM — pole mocy nieaktywne, jasny komunikat w UI, zamiast mocy dither/predkosc |
+| REQ-13-046 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: konfiguracja wariantu plyty i ID plyty (serial) |
+| REQ-13-047 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: kroki/mm (1000 dpi) i korekcja skali X/Y |
+| REQ-13-048 | 13.3 | MUST | M3 | emu | verified | Lihuiyu: home, rapid vs ruch powolny, pauza/wznowienie |
+| REQ-13-049 | 13.3 | MUST | M3 | hw | in_progress | K40 niezmodyfikowany dziala „od pudelka” |
 | REQ-13-050 | 13.3 | MUST | M2 | emu | verified | K40 po modernizacji (Cohesion3D Mini/LaserBoard, Awesome.tech, SKR + GRBL-LPC/Smoothie/grblHAL) przez rodzine G-code |
-| REQ-13-051 | 13.3 | MUST | M3 | emu | todo | Moshi: Moshidraw MS10105 (V4.x) przez USB CH341 |
-| REQ-13-052 | 13.3 | MUST | M3 | emu | todo | Moshi: protokol Moshi, cale zadanie wysylane blokami |
+| REQ-13-051 | 13.3 | MUST | M3 | emu | verified | Moshi: Moshidraw MS10105 (V4.x) przez USB CH341 |
+| REQ-13-052 | 13.3 | MUST | M3 | emu | verified | Moshi: protokol Moshi, cale zadanie wysylane blokami |
 | REQ-13-053 | 13.3 | MUST | M2 | emu | verified | GRBL 0.9 |
 | REQ-13-054 | 13.3 | MUST | M2 | emu | verified | GRBL 1.1f/1.1h |
 | REQ-13-055 | 13.3 | MUST | M2 | emu | verified | grblHAL |
@@ -1293,7 +1293,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-19-006 | 19 | MUST | M2 | auto | verified | Testy golden kompilatorow sterownikow (projekt referencyjny -> bajty/G-code) |
 | REQ-19-007 | 19 | MUST | M2 | auto | verified | Emulator GRBL (grbl-sim + symulator bufora) |
 | REQ-19-008 | 19 | MUST | M3 | auto | deviation | Emulator Ruida (serwer UDP z ACK, dekodowanie swizzlingu, wizualizacja ruchu) |
-| REQ-19-009 | 19 | MUST | M3 | auto | todo | Emulator Lihuiyu (pakiety z CRC, stany BUSY/OK) |
+| REQ-19-009 | 19 | MUST | M3 | auto | verified | Emulator Lihuiyu (pakiety z CRC, stany BUSY/OK) |
 | REQ-19-010 | 19 | MUST | M5 | auto | todo | Emulator BJJCZ (listy polecen) |
 | REQ-19-011 | 19 | MUST | M6 | auto | todo | Mock xTool HTTP |
 | REQ-19-012 | 19 | MUST | M2 | auto | verified | Emulatory renderuja wynik do PNG porownywanego z podgladem planera |

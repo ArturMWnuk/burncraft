@@ -489,8 +489,10 @@ fn req_13_047_steps_per_mm_and_scale() {
     assert!((w as f64 - 30.0 / 25.4 * 1000.0 * 1.02).abs() <= 1.0, "{w}");
     assert!((h as f64 - 20.0 / 25.4 * 1000.0 * 0.98).abs() <= 1.0, "{h}");
     // zakresy w profilu
-    let mut k = K40Settings::default();
-    k.scale = [3.0, 1.0];
+    let k = K40Settings {
+        scale: [3.0, 1.0],
+        ..Default::default()
+    };
     assert!(k.validate().is_err());
 }
 

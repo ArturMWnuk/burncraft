@@ -98,6 +98,32 @@ fn object_hash(
     format!("{:016x}", h.finish())
 }
 
+/// Wybrane urządzenie: sterownik, płyta K40 i regulacja mocy (PWM). Bez PWM (K40 M2 Nano,
+/// Moshi) GUI wyłącza pole mocy z komunikatem (REQ-13-045).
+fn device_info(s: &bc_commands::Session) -> Value {
+    let Some(name) = &s.device else {
+        return Value::Null;
+    };
+    let m = s.machines.lock().expect("urządzenia");
+    let Some(p) = m
+        .connected_profile(name)
+        .cloned()
+        .or_else(|| m.profile(name))
+    else {
+        return Value::Null;
+    };
+    json!({
+        "name": p.name,
+        "driver": p.driver,
+        "board": match p.driver.as_str() {
+            "lihuiyu" => Some(p.k40_settings().board.name()),
+            "moshi" => Some("Moshi MS10105"),
+            _ => None,
+        },
+        "pwm": p.pwm(),
+    })
+}
+
 /// Scena. `have` (id → skrót) z poprzedniego pobrania: obiekty o tym samym
 /// skrócie przychodzą jako `{id, hash, same: true}` bez geometrii (REQ-16-006 —
 /// zmiana jednego obiektu w dużym dokumencie nie przesyła całej sceny).
@@ -206,6 +232,7 @@ pub fn build(
             .map(|(name, data)| json!({"name": name, "size": data.len()}))
             .collect::<Vec<_>>(),
         "docs": docs,
+        "device": device_info(s),
         "active": bench.active,
         "history": {
             "undo": s.history.undo_labels(),

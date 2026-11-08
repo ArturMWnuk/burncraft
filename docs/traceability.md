@@ -734,29 +734,29 @@
 | REQ-13-027 | M6 | todo |  |  |
 | REQ-13-028 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_196_028_profiles_and_multiple_devices` |  |
 | REQ-13-029 | M2 | verified | `crates/bc-cli/tests/device_cli.rs::req_13_029_cli_device_option_and_network_emulator` |  |
-| REQ-13-030 | M3 | todo |  |  |
-| REQ-13-031 | M3 | todo |  |  |
-| REQ-13-032 | M3 | todo |  |  |
-| REQ-13-033 | M3 | todo |  |  |
-| REQ-13-034 | M3 | todo |  |  |
-| REQ-13-035 | M3 | todo |  |  |
-| REQ-13-036 | M3 | todo |  |  |
-| REQ-13-037 | M3 | todo |  |  |
-| REQ-13-038 | M3 | todo |  |  |
-| REQ-13-039 | M3 | todo |  |  |
-| REQ-13-040 | M3 | todo |  |  |
-| REQ-13-041 | M3 | todo |  |  |
-| REQ-13-042 | M3 | todo |  |  |
-| REQ-13-043 | M3 | todo |  |  |
-| REQ-13-044 | M3 | todo |  |  |
-| REQ-13-045 | M3 | todo |  |  |
-| REQ-13-046 | M3 | todo |  |  |
-| REQ-13-047 | M3 | todo |  |  |
-| REQ-13-048 | M3 | todo |  |  |
-| REQ-13-049 | M3 | todo |  |  |
+| REQ-13-030 | M3 | in_progress |  |  |
+| REQ-13-031 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_031_board_m3_nano` |  |
+| REQ-13-032 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_032_board_m1` |  |
+| REQ-13-033 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_033_board_m` |  |
+| REQ-13-034 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_034_board_b1` |  |
+| REQ-13-035 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_035_board_b2` |  |
+| REQ-13-036 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_036_board_b` |  |
+| REQ-13-037 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_037_board_a` |  |
+| REQ-13-038 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_038_board_6c6879_laser_m2_m3` |  |
+| REQ-13-039 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_039_ch341_native_usb`<br>`web/e2e/k40.spec.ts::req_13_039_add_k40_from_usb_finder` |  |
+| REQ-13-040 | M3 | in_progress | `crates/bc-drivers/tests/k40.rs::req_13_040_ch341_dll_runtime_loading` |  |
+| REQ-13-041 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_041_egv_packets_30_bytes_crc8` |  |
+| REQ-13-042 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_042_status_ok_busy_crc_task_complete` |  |
+| REQ-13-043 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_043_speed_code_known_value_m2`<br>`crates/bc-drivers/tests/k40.rs::req_13_043_direction_step_commands` |  |
+| REQ-13-044 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_044_native_raster_step_mode` |  |
+| REQ-13-045 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_045_profile_without_pwm_validation`<br>`crates/bc-drivers/tests/k40.rs::req_13_045_no_pwm_power_ignored_warning`<br>`web/e2e/k40.spec.ts::req_13_045_no_pwm_power_field_disabled_with_message` | docs/procedures/M3-gui-checks.md |
+| REQ-13-046 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_046_047_k40_profile_board_compile_and_job`<br>`crates/bc-drivers/tests/k40.rs::req_13_046_board_variant_and_id`<br>`web/e2e/k40.spec.ts::req_13_046_047_k40_board_variant_id_and_scale` |  |
+| REQ-13-047 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_046_047_k40_profile_board_compile_and_job`<br>`crates/bc-drivers/tests/k40.rs::req_13_047_steps_per_mm_and_scale`<br>`web/e2e/k40.spec.ts::req_13_046_047_k40_board_variant_id_and_scale` |  |
+| REQ-13-048 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_048_home_rapid_slow_pause_resume` |  |
+| REQ-13-049 | M3 | in_progress |  |  |
 | REQ-13-050 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_050_053_to_070_grbl_variants` |  |
-| REQ-13-051 | M3 | todo |  |  |
-| REQ-13-052 | M3 | todo |  |  |
+| REQ-13-051 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_051_moshi_ms10105_over_ch341` |  |
+| REQ-13-052 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_052_moshi_job_via_registry`<br>`crates/bc-drivers/tests/k40.rs::req_13_052_moshi_protocol_job_in_blocks` |  |
 | REQ-13-053 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_050_053_to_070_grbl_variants` |  |
 | REQ-13-054 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_050_053_to_070_grbl_variants` |  |
 | REQ-13-055 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_050_053_to_070_grbl_variants` |  |
@@ -1091,10 +1091,10 @@
 | REQ-19-006 | M2 | verified | `crates/bc-drivers/tests/golden.rs::req_19_006_golden_reference_project`<br>`crates/bc-drivers/tests/golden.rs::req_19_006_golden_raster_bitmap`<br>`crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic` |  |
 | REQ-19-007 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_19_012_007_emulator_png_matches_planner_preview`<br>`crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic`<br>`crates/bc-drivers/tests/grbl_sim_diff.rs::req_19_007_emulator_responses_follow_grbl_protocol`<br>`crates/bc-drivers/tests/grbl_sim_diff.rs::req_19_007_differential_with_grbl_sim` |  |
 | REQ-19-008 | M3 | deviation |  |  |
-| REQ-19-009 | M3 | todo |  |  |
+| REQ-19-009 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_19_009_012_lihuiyu_emulator_png_matches_planner`<br>`crates/bc-drivers/tests/k40.rs::req_19_009_simulators_in_machines`<br>`web/e2e/k40.spec.ts::req_19_009_k40_simulator_runs_job` |  |
 | REQ-19-010 | M5 | todo |  |  |
 | REQ-19-011 | M6 | todo |  |  |
-| REQ-19-012 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_19_012_007_emulator_png_matches_planner_preview` |  |
+| REQ-19-012 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_19_012_007_emulator_png_matches_planner_preview`<br>`crates/bc-drivers/tests/k40.rs::req_19_009_012_lihuiyu_emulator_png_matches_planner` |  |
 | REQ-19-013 | M1 | verified | `web/e2e/app.spec.ts::req_01_022_and_req_03_001_002_003_017_and_req_19_013_webgl2_workspace` |  |
 | REQ-19-014 | M6 | todo |  |  |
 | REQ-19-015 | M6 | todo |  |  |

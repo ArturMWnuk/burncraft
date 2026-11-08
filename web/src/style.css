@@ -165,6 +165,8 @@ table.layers th { color: var(--muted); font-weight: normal; text-align: left; fo
 table.layers td { padding: 1px 2px; }
 table.layers select { max-width: 78px; }
 input.cell { width: 40px; background: var(--bg); border: 1px solid var(--border); border-radius: 3px; padding: 1px 3px; }
+input.cell:disabled { opacity: 0.45; cursor: not-allowed; border-style: dashed; }
+.note.no-pwm, .ls-note.no-pwm { border-left: 3px solid var(--muted); padding-left: 6px; }
 select { background: var(--bg); border: 1px solid var(--border); border-radius: 3px; max-width: 90px; }
 
 ul.objects, ol.history { list-style: none; margin: 0; padding: 0; max-height: 220px; overflow-y: auto; }

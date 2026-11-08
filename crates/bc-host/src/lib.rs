@@ -232,6 +232,8 @@ impl Core {
             d.revision.hash(&mut h);
             d.selection.hash(&mut h);
             d.dirty.hash(&mut h);
+            // wybrane urządzenie: scena niesie możliwość PWM (pole mocy, REQ-13-045)
+            d.device.hash(&mut h);
         }
         h.finish()
     }

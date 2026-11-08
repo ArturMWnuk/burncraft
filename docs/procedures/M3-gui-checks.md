@@ -13,6 +13,13 @@ Wynik (2026-11-07, M3.1): **zgodne**.
 
 Procedurę trzeba powtórzyć przy M3.2 (Ruida) i M3.3 (Lihuiyu, Moshi), kiedy przybędzie źródeł.
 
+Powtórzenie (2026-11-08, M3.3): **zgodne**.
+- Przegląd ADR 0014, tabeli w `THIRD_PARTY.md` i komentarzy w `crates/bc-drivers/src/{ch341.rs,lihuiyu/,moshi/}`.
+- Fakty o EGV, Moshi i CH341 pochodzą z MeerK40t (MIT): README modułów `lihuiyu` i `moshi` oraz opis zachowania `laserspeed.py`, `parser.py`, `controller.py`, `driver.py`, `builder.py`, `ch341/libusb.py`, `windriver.py`. Kod napisano od zera. Tablica kodów Moshi i CRC-8 są liczone z reguł, nie kopiowane.
+- Funkcje CH341DLL pochodzą z dokumentacji producenta (nagłówek CH341DLL.H), a MD5 i CRC-8 — z dokumentów publicznych (RFC 1321, katalog CRC).
+- K40 Whisperer (GPL-3.0) nie był używany.
+- Szczegóły niepotwierdzone na sprzęcie mają `UNVERIFIED` i trafiają do checklisty testu K40 (M3.4), spisanej w ADR 0014.
+
 ## REQ-13-020 — kreator instalacji sterownika USB na Windows
 
 Procedura: okno Laser → „Znajdź mój laser” (`machine.find`). W sekcji „Urządzenia USB” są lasery znanych rodzin ze stanem dostępu. Przy urządzeniu bez sterownika WinUSB przycisk „Jak podłączyć…” (`machine.usb_guide`) otwiera przewodnik w oknie dialogowym.
@@ -27,6 +34,7 @@ Wynik (2026-11-07): **zgodne**.
 - Przewodnik prowadzi przez instalację WinUSB narzędziem Zadig, którego BurnCraft nie dołącza (decyzja zleceniodawcy). Podaje USB ID do wyboru w narzędziu i alternatywę: oryginalny sterownik CH341 producenta (REQ-13-040, M3.3).
 - Tłumaczenie angielskie jest kompletne.
 - Stan „sterownik BurnCraft w etapie M3.3/M5” informuje, że sam sterownik lasera powstaje później.
+- Aktualizacja M3.3 (2026-11-08): sterownik K40 już jest, więc przy K40 nie ma dopisku o etapie. Są za to przyciski „Dodaj K40 (Lihuiyu)” i „Dodaj Moshi” (`machine.profile_save`); zrzut `usb-found.png` jest odświeżony.
 
 Uwagi z przeglądu zrzutów (poprawione przed zatwierdzeniem): w pierwszej wersji przewodnik był w panelu bocznym i jego dolna część była ucięta. Teraz otwiera się w oknie dialogowym.
 
@@ -47,3 +55,37 @@ sudo udevadm control --reload-rules && sudo udevadm trigger
 - CI na Linuksie sprawdza składnię pliku poleceniem `udevadm verify`.
 
 Wynik (2026-11-07): **zgodne**. Treść reguł sprawdzają test `req_13_021_udev_rules_file_matches_known_families` i test CLI `req_13_021_cli_prints_udev_rules`, a składnię — CI. Nadanie uprawnień prawdziwemu urządzeniu na Linuksie nie było sprawdzane: zleceniodawca testuje K40 na Windows.
+
+## REQ-13-045 — brak PWM: pole mocy nieaktywne, komunikat, dither i prędkość
+
+Procedura: okno Laser → wybór urządzenia „Symulator K40 (Lihuiyu)” (płyta M2 Nano bez PWM) → „Połącz” (`machine.connect`). Następnie przegląd:
+- panelu Warstwy z prostokątem na warstwie C00;
+- okna ustawień warstwy (`layer.settings_open`), zakładka Ogólne;
+- sekcji „Płyta K40” w oknie Laser.
+
+Dla porównania to samo z urządzeniem „Symulator” (GRBL z PWM).
+
+| Warstwy (pl) | Warstwy (en) | Urządzenie z PWM (GRBL) |
+|---|---|---|
+| ![Warstwy bez PWM](img/m3/k40-layers-no-pwm.png) | ![Layers without PWM](img/m3/k40-layers-no-pwm-en.png) | ![Warstwy z PWM](img/m3/k40-layers-grbl-pwm.png) |
+
+| Ustawienia warstwy (pl) | Ustawienia warstwy (en) |
+|---|---|
+| ![Ustawienia warstwy bez PWM](img/m3/k40-layer-settings-no-pwm.png) | ![Layer settings without PWM](img/m3/k40-layer-settings-no-pwm-en.png) |
+
+| Płyta K40 w oknie Laser (pl) | (en) |
+|---|---|
+| ![Płyta K40](img/m3/k40-laser-board.png) | ![K40 board](img/m3/k40-laser-board-en.png) |
+
+Wynik (2026-11-08): **zgodne**.
+- Z urządzeniem bez PWM pole „Moc %” w panelu Warstwy jest nieaktywne (przyciemnione, obramowanie przerywane) i ma podpowiedź „Brak PWM: moc ustawia pokrętło na laserze”.
+- Nad tabelą jest komunikat z nazwą urządzenia i płyty: moc ustawia się pokrętłem na laserze, a jaśniejsze i ciemniejsze miejsca uzyskuje się ditheringiem obrazu albo prędkością.
+- W oknie ustawień warstwy pola „Moc maks.” i „Moc min.” są nieaktywne, a nad nimi jest ten sam komunikat. Prędkość pozostaje edytowalna.
+- Urządzenie z PWM (GRBL) ma aktywne pole mocy i nie ma komunikatu. Tłumaczenie angielskie jest kompletne.
+- Sekcja „Płyta K40” pokazuje wariant „M2 Nano — bez PWM”. Lista wariantów oznacza płyty bez PWM; PWM ma tylko M3 Nano i 6C6879-LASER-M3.
+- Zachowanie kompilatora sprawdzają testy automatyczne:
+  - moc < 100 % daje ostrzeżenie `power_ignored`, a wiązka jest włączona na pełną moc pokrętła;
+  - zmienna moc w grafice jest zamieniana na dither (`req_13_045_no_pwm_power_ignored_warning`);
+  - zachowanie GUI: test E2E `req_13_045_no_pwm_power_field_disabled_with_message`.
+
+Do sprawdzenia na sprzęcie (test K40, M3.4): nie dotyczy GUI. Faktyczna moc z pokrętła i wygląd ditheru na materiale należą do checklisty K40.

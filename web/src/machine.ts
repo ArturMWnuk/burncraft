@@ -43,7 +43,20 @@ export interface UsbFound {
 }
 
 /** Sterowniki BurnCraft dostępne w tej wersji (rodziny USB z innym sterownikiem: „w etapie …”). */
-const READY_DRIVERS = new Set<string>(["grbl"]);
+const READY_DRIVERS = new Set<string>(["grbl", "lihuiyu", "moshi"]);
+
+/** Profil urządzenia z `machine.list` (pola używane przez okno). */
+interface Profile {
+  name: string;
+  driver: string;
+  transport: { kind: string; [k: string]: unknown };
+  workspace: [number, number];
+  k40?: { board: string; board_id?: string | null; dpi?: number; scale?: [number, number] } | null;
+  [k: string]: unknown;
+}
+
+/** Urządzenia fikcyjne (profile tylko do odczytu). */
+const SIMULATORS = new Set(["Symulator", "Symulator K40 (Lihuiyu)", "Symulator Moshi"]);
 
 const hex4 = (v: number) => v.toString(16).toUpperCase().padStart(4, "0");
 
@@ -156,6 +169,11 @@ export class Machine {
   lastJog: { axis: string; distance: number; speed: number } | null = null;
   lastStart: Record<string, unknown> | null = null;
   profiles: string[] = [];
+  /** Pełne profile (płyta K40, transport) i warianty płyt Lihuiyu. */
+  profileData: Profile[] = [];
+  boards: { id: string; name: string; pwm: boolean }[] = [];
+  /** Profil wybrany na liście przed połączeniem. */
+  private picked: string | null = null;
   connected: string[] = [];
   positions: { name: string; x: number; y: number }[] = [];
   macros: { name: string; steps: unknown[] }[] = [];
@@ -251,8 +269,10 @@ export class Machine {
   /** Odświeża listy (profile, pozycje, makra, ustawienia startu). */
   async reload() {
     try {
-      const l = await this.host.rpc.execute<{ profiles: { name: string }[]; connected: string[]; selected: string | null }>("machine.list", {});
+      const l = await this.host.rpc.execute<{ profiles: Profile[]; connected: string[]; selected: string | null; boards?: Machine["boards"] }>("machine.list", {});
       this.profiles = l.profiles.map((p) => p.name);
+      this.profileData = l.profiles;
+      this.boards = l.boards ?? [];
       this.connected = l.connected;
       this.positions = (await this.host.rpc.execute<{ positions: Machine["positions"] }>("machine.positions", {})).positions;
       this.macros = (await this.host.rpc.execute<{ macros: Machine["macros"] }>("macro.list", {})).macros;
@@ -390,8 +410,14 @@ export class Machine {
   }
 
   private renderLaser() {
-    const dev = h("select", { "data-testid": "laser-device", "data-command": "machine.connect", title: t("laser-device"), "aria-label": t("laser-device") },
-      ...this.profiles.map((p) => h("option", { value: p, selected: p === (this.device ?? this.connected[0] ?? this.profiles[0]) }, p)));
+    const current = this.picked && this.profiles.includes(this.picked) ? this.picked : (this.device ?? this.connected[0] ?? this.profiles[0]);
+    const dev = h("select", { "data-testid": "laser-device", "data-command": "machine.connect", title: t("laser-device"), "aria-label": t("laser-device"),
+      // wybór profilu pokazuje jego ustawienia (płyta K40) przed połączeniem
+      onchange: (e: Event) => {
+        this.picked = (e.target as HTMLSelectElement).value;
+        this.render();
+      } },
+      ...this.profiles.map((p) => h("option", { value: p, selected: p === current }, p)));
     const live = (key: string, testid: string) => (this.live[key] = h("span", { "data-testid": testid, class: `live ${key}` }));
     const startFrom = h("select", { "data-testid": "laser-start-from", "data-command": "job.start_settings", title: t("laser-start-from"), "aria-label": t("laser-start-from"),
       onchange: async (e: Event) => {
@@ -434,8 +460,42 @@ export class Machine {
       h("label", { class: "field wide" }, h("span", {}, t("laser-start-from")), startFrom),
       h("div", { class: "row" }, h("span", { class: "muted" }, t("laser-job-origin")), origins),
       h("label", { class: "opt" }, sel, t("laser-selection-only")),
+      ...this.k40Rows(dev.value),
       ...this.setupRows(),
     );
+  }
+
+  /** Płyta K40 wybranego profilu: wariant, ID płyty, korekcja skali (REQ-13-046, 047). */
+  private k40Rows(name: string): HTMLElement[] {
+    const p = this.profileData.find((x) => x.name === name);
+    if (!p || (p.driver !== "lihuiyu" && p.driver !== "moshi")) return [];
+    const k = { board: "m2", dpi: 1000, scale: [1, 1] as [number, number], ...(p.k40 ?? {}) };
+    const fixed = SIMULATORS.has(p.name);
+    const save = async (patch: Partial<NonNullable<Profile["k40"]>>) => {
+      const k40 = { ...k, ...patch };
+      if (k40.board_id === "") k40.board_id = null;
+      await this.host.run("machine.profile_save", { profile: { ...p, k40 } });
+      await this.afterList();
+    };
+    const stop = (e: Event) => e.stopPropagation();
+    const board = h("select", { "data-testid": "k40-board", "data-command": "machine.profile_save", title: t("k40-board"), "aria-label": t("k40-board"), disabled: fixed || p.driver === "moshi",
+      onchange: (e: Event) => void save({ board: (e.target as HTMLSelectElement).value }) },
+      ...this.boards.map((b) => h("option", { value: b.id, selected: b.id === k.board }, `${b.name}${b.pwm ? "" : ` — ${t("k40-no-pwm")}`}`)));
+    const id = h("input", { type: "text", value: k.board_id ?? "", "data-testid": "k40-board-id", "data-command": "machine.profile_save", title: t("k40-board-id"), "aria-label": t("k40-board-id"),
+      disabled: fixed || p.driver === "moshi", placeholder: t("k40-board-id-hint"), onkeydown: stop, onchange: (e: Event) => void save({ board_id: (e.target as HTMLInputElement).value.trim() }) });
+    const scale = (i: 0 | 1) => h("input", { type: "text", inputmode: "decimal", class: "cell", value: num(k.scale[i]), "data-testid": `k40-scale-${i ? "y" : "x"}`, "data-command": "machine.profile_save",
+      title: t(i ? "k40-scale-y" : "k40-scale-x"), "aria-label": t(i ? "k40-scale-y" : "k40-scale-x"), disabled: fixed, onkeydown: stop,
+      onchange: (e: Event) => {
+        const v = parseNum((e.target as HTMLInputElement).value);
+        if (v !== null) void save({ scale: (i ? [k.scale[0], v] : [v, k.scale[1]]) as [number, number] });
+      } });
+    return [
+      h("h4", {}, t(p.driver === "moshi" ? "k40-title-moshi" : "k40-title")),
+      h("label", { class: "field wide" }, h("span", {}, t("k40-board")), board),
+      h("label", { class: "field wide" }, h("span", {}, t("k40-board-id")), id),
+      h("div", { class: "row" }, h("span", { class: "muted" }, t("k40-scale")), scale(0), scale(1), h("span", { class: "muted" }, `${num(k.dpi ?? 1000)} dpi`)),
+      ...(fixed ? [h("p", { class: "muted", "data-testid": "k40-fixed" }, t("k40-fixed"))] : []),
+    ];
   }
 
   /** Nowe urządzenie: kreator „Znajdź mój laser” i profil portu szeregowego. */
@@ -483,6 +543,7 @@ export class Machine {
         h("span", {}, `${name} (${hex4(u.device.vid)}:${hex4(u.device.pid)})`),
         h("span", { class: `badge usb-${state}` }, t(`usb-state-${state}`)),
         !u.family || !READY_DRIVERS.has(u.family.driver) ? h("span", { class: "muted" }, t("usb-driver-soon", { milestone: u.family?.milestone ?? "?" })) : null,
+        ...(u.family?.driver === "lihuiyu" ? this.k40AddButtons(u, i) : []),
         u.guide.ok ? null : h("button", { "data-testid": `laser-usb-${i}-guide`, "data-command": "machine.usb_guide", title: t("usb-guide-open"), "aria-label": t("usb-guide-open"),
           onclick: async () => {
             const g = (await this.host.run("machine.usb_guide", { vid: u.device.vid, pid: u.device.pid })) as UsbGuide | undefined;
@@ -490,6 +551,22 @@ export class Machine {
           } }, t("usb-guide-open")));
     });
     return [h("h4", {}, t("laser-usb")), ...rows];
+  }
+
+  /** Profil K40 z urządzenia USB CH341: WinUSB natywnie albo sterownik producenta CH341DLL (REQ-13-039, 040). */
+  private k40AddButtons(u: UsbFound, i: number): HTMLElement[] {
+    const vendor = u.device.access.state === "vendor_driver";
+    const transport = vendor ? { kind: "ch341_dll", index: 0 } : { kind: "usb", vid: u.device.vid, pid: u.device.pid };
+    const add = (driver: "lihuiyu" | "moshi") => async () => {
+      const name = driver === "moshi" ? "Moshi (USB)" : "K40 (USB)";
+      const workspace = driver === "moshi" ? [330, 210] : [310, 210];
+      await this.host.run("machine.profile_save", { profile: { name, driver, transport, workspace, k40: { board: "m2" } } });
+      await this.afterList();
+    };
+    return [
+      h("button", { "data-testid": `laser-usb-${i}-add-k40`, "data-command": "machine.profile_save", title: t("usb-add-k40"), "aria-label": t("usb-add-k40"), onclick: () => void add("lihuiyu")() }, t("usb-add-k40")),
+      h("button", { "data-testid": `laser-usb-${i}-add-moshi`, "data-command": "machine.profile_save", title: t("usb-add-moshi"), "aria-label": t("usb-add-moshi"), onclick: () => void add("moshi")() }, t("usb-add-moshi")),
+    ];
   }
 
   private guideRoot: HTMLElement | null = null;

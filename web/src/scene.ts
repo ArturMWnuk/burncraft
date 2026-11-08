@@ -56,6 +56,20 @@ export interface Scene {
   docs: { name: string; path: string | null; dirty: boolean }[];
   active: number;
   history: { undo: string[]; redo: string[] };
+  /** Wybrane urządzenie: sterownik, płyta K40, regulacja mocy (REQ-13-045). */
+  device?: DeviceInfo | null;
+}
+
+export interface DeviceInfo {
+  name: string;
+  driver: string;
+  board: string | null;
+  pwm: boolean;
+}
+
+/** Urządzenie bez regulacji mocy z programu (K40 M2 Nano, Moshi) — pole mocy nieaktywne. */
+export function noPwm(s: Scene | null | undefined): DeviceInfo | null {
+  return s?.device && !s.device.pwm ? s.device : null;
 }
 
 export function unionBox(boxes: (Rect | null)[]): Rect | null {

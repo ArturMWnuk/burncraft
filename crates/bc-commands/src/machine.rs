@@ -71,10 +71,23 @@ pub(crate) fn kinematics_of(s: &Session) -> (bc_doc::params::Kinematics, &'stati
     (s.doc.plan.kinematics, "document")
 }
 
-/// Kontekst kompilatora z kinematyką jak w [`kinematics_of`].
+/// Kontekst kompilatora z kinematyką jak w [`kinematics_of`]; dla wybranego urządzenia K40
+/// (lihuiyu, moshi) — płyta, kroki/mm, skala i stół z profilu (REQ-13-046, 047).
 pub(crate) fn context_of(s: &Session) -> Context {
     let mut c = Context::from_document(&s.doc);
     c.kinematics = kinematics_of(s).0;
+    if let Some(name) = &s.device {
+        let m = s.machines.lock().expect("urządzenia");
+        if let Some(p) = m
+            .connected_profile(name)
+            .cloned()
+            .or_else(|| m.profile(name))
+            .filter(|p| p.is_k40())
+        {
+            c.k40 = p.k40_settings();
+            c.bed = p.workspace;
+        }
+    }
     c
 }
 
@@ -113,6 +126,8 @@ struct ListResult {
     selected: Option<String>,
     /// Odmiany GRBL z tabeli (id, nazwa).
     variants: Vec<(String, String)>,
+    /// Warianty płyt K40 Lihuiyu (REQ-13-030…038): id, nazwa, PWM.
+    boards: Vec<bc_drivers::lihuiyu::BoardInfo>,
 }
 
 fn machine_list(s: &mut Session, p: Value) -> Result<Value, CmdError> {
@@ -125,6 +140,10 @@ fn machine_list(s: &mut Session, p: Value) -> Result<Value, CmdError> {
         variants: bc_drivers::grbl::codes::VARIANTS
             .iter()
             .map(|v| (v.id.to_string(), v.name.to_string()))
+            .collect(),
+        boards: bc_drivers::lihuiyu::BOARDS
+            .iter()
+            .map(|b| b.info())
             .collect(),
     })
 }
@@ -1266,8 +1285,8 @@ fn reg(
 pub(crate) fn register_all(r: &mut Registry) {
     use SafetyTier::*;
     let dev = schema_of::<DevParam>;
-    reg(r, "machine.list", "Urządzenia", "Profile urządzeń (z urządzeniem fikcyjnym „Symulator”), podłączone urządzenia, wybrane urządzenie i odmiany GRBL.", Read, false, dev(), &["REQ-13-191", "REQ-13-196"], machine_list);
-    reg(r, "machine.profile_save", "Zapisz profil urządzenia", "Dodaje albo zastępuje profil urządzenia (nazwa, sterownik grbl, odmiana, transport serial/tcp/websocket/emulator, obszar, tryb strumieniowania, s_max, czerwony laser, prędkość ramki); zapis w devices.json katalogu preferencji.", Design, false, schema_of::<ProfileParams>(), &["REQ-13-196"], profile_save);
+    reg(r, "machine.list", "Urządzenia", "Profile urządzeń (z urządzeniami fikcyjnymi „Symulator”, „Symulator K40 (Lihuiyu)”, „Symulator Moshi”), podłączone urządzenia, wybrane urządzenie, odmiany GRBL i warianty płyt K40 (boards).", Read, false, dev(), &["REQ-13-191", "REQ-13-196", "REQ-13-046", "REQ-19-009"], machine_list);
+    reg(r, "machine.profile_save", "Zapisz profil urządzenia", "Dodaje albo zastępuje profil urządzenia (nazwa, sterownik grbl / lihuiyu (K40) / moshi, odmiana, transport serial/tcp/websocket/usb/ch341_dll/emulator, obszar, tryb strumieniowania, s_max, czerwony laser, prędkość ramki, k40: płyta, ID płyty, dpi, korekcja skali); zapis w devices.json katalogu preferencji.", Design, false, schema_of::<ProfileParams>(), &["REQ-13-196"], profile_save);
     reg(
         r,
         "machine.profile_delete",
@@ -1281,7 +1300,7 @@ pub(crate) fn register_all(r: &mut Registry) {
     );
     reg(r, "machine.find", "Znajdź mój laser", "Kreator: lista portów szeregowych z VID/PID (FTDI, CH340, CP210x) i próba połączenia GRBL na kolejnych prędkościach; wynik z gotowymi profilami. Pole usb: urządzenia USB znanych rodzin laserów (K40 CH341, galvo BJJCZ) ze stanem sterownika i przewodnikiem.", Read, false, schema_of::<FindParams>(), &["REQ-13-192", "REQ-13-018", "REQ-13-193"], machine_find);
     reg(r, "machine.usb_guide", "Sterownik USB", "Przewodnik dostępu do urządzenia USB: instalacja sterownika WinUSB narzędziem Zadig na Windows (albo sterownik producenta CH341), reguły udev na Linuksie; ok = urządzenie gotowe.", Read, false, schema_of::<UsbGuideParams>(), &["REQ-13-020", "REQ-13-021", "REQ-13-019"], machine_usb_guide);
-    reg(r, "machine.connect", "Połącz", "Łączy profil z urządzeniem (rozpoznanie odmiany GRBL) i wybiera je w sesji. Kilka urządzeń może być połączonych naraz.", Design, false, schema_of::<ConnectParams>(), &["REQ-13-002", "REQ-13-028", "REQ-13-072", "REQ-13-073", "REQ-13-074"], machine_connect);
+    reg(r, "machine.connect", "Połącz", "Łączy profil z urządzeniem (rozpoznanie odmiany GRBL; K40: USB CH341 natywnie albo sterownik CH341DLL, potwierdzenie ID płyty) i wybiera je w sesji. Kilka urządzeń może być połączonych naraz.", Design, false, schema_of::<ConnectParams>(), &["REQ-13-002", "REQ-13-028", "REQ-13-072", "REQ-13-073", "REQ-13-074", "REQ-13-039", "REQ-13-040", "REQ-13-046"], machine_connect);
     reg(
         r,
         "machine.disconnect",
