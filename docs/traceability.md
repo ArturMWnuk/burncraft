@@ -152,8 +152,8 @@
 | REQ-02-084 | M7 | todo |  |  |
 | REQ-02-085 | M7 | todo |  |  |
 | REQ-02-086 | M7 | todo |  |  |
-| REQ-02-087 | M3 | todo |  |  |
-| REQ-02-088 | M3 | todo |  |  |
+| REQ-02-087 | M3 | deviation |  |  |
+| REQ-02-088 | M3 | deviation |  |  |
 | REQ-02-089 | M2 | verified | `crates/bc-commands/tests/gcode_commands.rs::req_02_089_import_gcode_command_preview_and_run`<br>`crates/bc-drivers/tests/import.rs::req_02_089_import_gcode_preview_and_report`<br>`crates/bc-drivers/tests/import.rs::req_02_089_import_units_relative_and_offsets`<br>`crates/bc-mcp/tests/export_machine_file.rs::req_02_089_mcp_import_and_preview_gcode`<br>`web/e2e/gcode.spec.ts::req_02_089_import_gcode_from_toolbar_shows_paths` |  |
 | REQ-02-090 | M2 | verified | `crates/bc-cli/tests/gcode_cli.rs::req_02_090_cli_export_gcode`<br>`crates/bc-commands/tests/gcode_commands.rs::req_02_090_export_gcode_via_file_export`<br>`crates/bc-drivers/tests/import.rs::req_02_090_export_import_round_trip` |  |
 | REQ-02-091 | M1 | verified | `crates/bc-io/tests/lbrn_samples.rs::req_02_091_lbrn_format0_matches_lbrn2` |  |
@@ -633,7 +633,7 @@
 | REQ-10-014 | M2 | verified | `crates/bc-drivers/tests/driver_grbl.rs::req_10_014_home_sets_machine_zero` |  |
 | REQ-10-015 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_10_013_015_016_job_start_moves_and_positions` |  |
 | REQ-10-016 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_10_013_015_016_job_start_moves_and_positions` |  |
-| REQ-10-017 | M3 | todo |  |  |
+| REQ-10-017 | M6 | todo |  |  |
 | REQ-10-018 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_10_018_save_to_sd_card` |  |
 | REQ-10-019 | M2 | verified | `crates/bc-commands/tests/gcode_commands.rs::req_10_019_save_gcode_file`<br>`web/e2e/gcode.spec.ts::req_10_019_toolbar_save_gcode_file` |  |
 | REQ-10-020 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_10_020_021_queue_repeat_and_gcode_source`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_10_020_021_queue_and_repeat` |  |
@@ -669,7 +669,7 @@
 | REQ-11-026 | M6 | todo |  |  |
 | REQ-11-027 | M6 | todo |  |  |
 | REQ-11-028 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_11_028_probe_z_g38` |  |
-| REQ-11-029 | M3 | todo |  |  |
+| REQ-11-029 | M3 | deviation |  |  |
 | REQ-11-030 | M6 | todo |  |  |
 | REQ-11-031 | M5 | todo |  |  |
 | REQ-11-032 | M7 | todo |  |  |
@@ -823,34 +823,34 @@
 | REQ-13-116 | M6 | todo |  |  |
 | REQ-13-117 | M6 | todo |  |  |
 | REQ-13-118 | M6 | todo |  |  |
-| REQ-13-119 | M3 | todo |  |  |
-| REQ-13-120 | M3 | todo |  |  |
-| REQ-13-121 | M7 | todo |  |  |
-| REQ-13-122 | M3 | todo |  |  |
-| REQ-13-123 | M3 | todo |  |  |
-| REQ-13-124 | M3 | todo |  |  |
-| REQ-13-125 | M3 | todo |  |  |
-| REQ-13-126 | M3 | todo |  |  |
-| REQ-13-127 | M3 | todo |  |  |
-| REQ-13-128 | M3 | todo |  |  |
-| REQ-13-129 | M3 | todo |  |  |
-| REQ-13-130 | M3 | todo |  |  |
-| REQ-13-131 | M3 | todo |  |  |
-| REQ-13-132 | M3 | todo |  |  |
-| REQ-13-133 | M3 | todo |  |  |
-| REQ-13-134 | M3 | todo |  |  |
-| REQ-13-135 | M3 | todo |  |  |
-| REQ-13-136 | M3 | todo |  |  |
-| REQ-13-137 | M3 | todo |  |  |
-| REQ-13-138 | M3 | todo |  |  |
-| REQ-13-139 | M3 | todo |  |  |
-| REQ-13-140 | M3 | todo |  |  |
-| REQ-13-141 | M3 | todo |  |  |
-| REQ-13-142 | M3 | todo |  |  |
-| REQ-13-143 | M3 | todo |  |  |
-| REQ-13-144 | M3 | todo |  |  |
-| REQ-13-145 | M3 | todo |  |  |
-| REQ-13-146 | M3 | todo |  |  |
+| REQ-13-119 | M3 | deviation |  |  |
+| REQ-13-120 | M3 | deviation |  |  |
+| REQ-13-121 | M7 | deviation |  |  |
+| REQ-13-122 | M3 | deviation |  |  |
+| REQ-13-123 | M3 | deviation |  |  |
+| REQ-13-124 | M3 | deviation |  |  |
+| REQ-13-125 | M3 | deviation |  |  |
+| REQ-13-126 | M3 | deviation |  |  |
+| REQ-13-127 | M3 | deviation |  |  |
+| REQ-13-128 | M3 | deviation |  |  |
+| REQ-13-129 | M3 | deviation |  |  |
+| REQ-13-130 | M3 | deviation |  |  |
+| REQ-13-131 | M3 | deviation |  |  |
+| REQ-13-132 | M3 | deviation |  |  |
+| REQ-13-133 | M3 | deviation |  |  |
+| REQ-13-134 | M3 | deviation |  |  |
+| REQ-13-135 | M3 | deviation |  |  |
+| REQ-13-136 | M3 | deviation |  |  |
+| REQ-13-137 | M3 | deviation |  |  |
+| REQ-13-138 | M3 | deviation |  |  |
+| REQ-13-139 | M3 | deviation |  |  |
+| REQ-13-140 | M3 | deviation |  |  |
+| REQ-13-141 | M3 | deviation |  |  |
+| REQ-13-142 | M3 | deviation |  |  |
+| REQ-13-143 | M3 | deviation |  |  |
+| REQ-13-144 | M3 | deviation |  |  |
+| REQ-13-145 | M3 | deviation |  |  |
+| REQ-13-146 | M3 | deviation |  |  |
 | REQ-13-147 | M6 | todo |  |  |
 | REQ-13-148 | M6 | todo |  |  |
 | REQ-13-149 | M6 | todo |  |  |
@@ -888,9 +888,9 @@
 | REQ-13-181 | M6 | todo |  |  |
 | REQ-13-182 | M6 | todo |  |  |
 | REQ-13-183 | M6 | todo |  |  |
-| REQ-13-184 | M3 | todo |  |  |
+| REQ-13-184 | M3 | deviation |  |  |
 | REQ-13-185 | M6 | todo |  |  |
-| REQ-13-186 | M3 | todo |  |  |
+| REQ-13-186 | M3 | deviation |  |  |
 | REQ-13-187 | M7 | todo |  |  |
 | REQ-13-188 | LATER | todo |  |  |
 | REQ-13-189 | M6 | todo |  |  |
@@ -898,7 +898,7 @@
 | REQ-13-191 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_191_017_simulator_device` |  |
 | REQ-13-192 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_192_find_my_laser`<br>`crates/bc-drivers/tests/hardware_m25.rs::req_13_192_find_profile_workspace_from_max_travel` |  |
 | REQ-13-193 | M3 | verified | `crates/bc-commands/tests/m31_commands.rs::req_13_193_machine_find_lists_usb_lasers`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_find_my_laser_lists_usb_lasers_by_vid_pid`<br>`web/e2e/usb.spec.ts::req_13_193_find_my_laser_shows_usb_lasers` |  |
-| REQ-13-194 | M3 | todo |  |  |
+| REQ-13-194 | M3 | deviation |  |  |
 | REQ-13-195 | M6 | todo |  |  |
 | REQ-13-196 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_196_028_profiles_and_multiple_devices`<br>`web/e2e/machine.spec.ts::req_13_196_laser_window_adds_serial_profile` |  |
 | REQ-13-197 | M6 | todo |  |  |
@@ -1075,7 +1075,7 @@
 | REQ-18-009 | M7 | todo |  |  |
 | REQ-18-010 | M7 | todo |  |  |
 | REQ-18-011 | M7 | todo |  |  |
-| REQ-18-012 | M7 | todo |  |  |
+| REQ-18-012 | M7 | deviation |  |  |
 | REQ-18-013 | M7 | todo |  |  |
 | REQ-18-014 | M0 | verified |  | docs/procedures/M0-manual-checks.md |
 | REQ-18-015 | M0 | verified |  | docs/procedures/M0-manual-checks.md |
@@ -1090,7 +1090,7 @@
 | REQ-19-005 | M1 | verified | `crates/bc-io/tests/import_export.rs::req_19_003_004_005_importers_never_panic_on_mutated_input` | docs/procedures/M1-manual-checks.md |
 | REQ-19-006 | M2 | verified | `crates/bc-drivers/tests/golden.rs::req_19_006_golden_reference_project`<br>`crates/bc-drivers/tests/golden.rs::req_19_006_golden_raster_bitmap`<br>`crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic` |  |
 | REQ-19-007 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_19_012_007_emulator_png_matches_planner_preview`<br>`crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic`<br>`crates/bc-drivers/tests/grbl_sim_diff.rs::req_19_007_emulator_responses_follow_grbl_protocol`<br>`crates/bc-drivers/tests/grbl_sim_diff.rs::req_19_007_differential_with_grbl_sim` |  |
-| REQ-19-008 | M3 | todo |  |  |
+| REQ-19-008 | M3 | deviation |  |  |
 | REQ-19-009 | M3 | todo |  |  |
 | REQ-19-010 | M5 | todo |  |  |
 | REQ-19-011 | M6 | todo |  |  |
@@ -1100,7 +1100,7 @@
 | REQ-19-015 | M6 | todo |  |  |
 | REQ-19-016 | M3 | todo | `crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic` |  |
 | REQ-19-017 | M2 | verified |  | docs/procedures/M2-hardware-grbl.md |
-| REQ-19-018 | M7 | todo |  |  |
+| REQ-19-018 | M7 | deviation |  |  |
 | REQ-19-019 | M5 | todo |  |  |
 | REQ-19-020 | M0 | verified |  | docs/procedures/M0-manual-checks.md |
 | REQ-19-021 | M0 | verified |  | docs/procedures/M0-manual-checks.md |

@@ -9,7 +9,7 @@ requirements:
   - {id: "REQ-00-003", sec: "0", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Obsluga laserow galvo: swiatlowodowych, UV i CO2"}
   - {id: "REQ-00-004", sec: "0", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Pelny zakres funkcji profesjonalnego programu do laserow (edycja, ustawienia ciecia, podglad, sterowanie maszyna, kamery, tryby specjalne) — wymaganie nadrzedne, rozbite w sekcjach 2-13"}
   - {id: "REQ-00-005", sec: "0", pri: "MUST", ms: "M6", verify: "auto", status: "todo", text: "Wbudowany serwer MCP umozliwiajacy agentowi AI projektowanie, przygotowanie i (po spelnieniu warunkow bezpieczenstwa) wykonanie zadan"}
-  - {id: "REQ-00-006", sec: "0", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Obsluga wszystkich popularnych sterownikow, w tym K40 Lihuiyu M2/M3 Nano, DSP Ruida/Trocen/TopWisdom/Leetro/Moshi, rodzina G-code, galvo EZCAD2/EZCAD3/BSL — nadrzedne, rozbite w sekcji 13"}
+  - {id: "REQ-00-006", sec: "0", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Obsluga wszystkich popularnych sterownikow, w tym K40 Lihuiyu M2/M3 Nano, DSP Ruida/Trocen/TopWisdom/Leetro/Moshi, rodzina G-code, galvo EZCAD2/EZCAD3/BSL — nadrzedne, rozbite w sekcji 13", note: "bez Ruidy - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-00-007", sec: "0", pri: "MUST", ms: "M7", verify: "auto", status: "todo", text: "Dzialanie na Windows 10+"}
   - {id: "REQ-00-008", sec: "0", pri: "MUST", ms: "M7", verify: "auto", status: "todo", text: "Dzialanie na macOS 11+ x64"}
   - {id: "REQ-00-009", sec: "0", pri: "MUST", ms: "M7", verify: "auto", status: "todo", text: "Dzialanie na macOS 11+ Apple Silicon"}
@@ -154,8 +154,8 @@ requirements:
   - {id: "REQ-02-084", sec: "2.4", pri: "SHOULD", ms: "M7", verify: "auto", status: "todo", text: "Import DWG przez ODA/LibreDWG", postulat: 70}
   - {id: "REQ-02-085", sec: "2.4", pri: "SHOULD", ms: "M7", verify: "auto", status: "todo", text: "Import CDR przez libcdr", postulat: 62}
   - {id: "REQ-02-086", sec: "2.4", pri: "SHOULD", ms: "M7", verify: "auto", status: "todo", text: "Import RLD (RDWorks)", postulat: 44}
-  - {id: "REQ-02-087", sec: "2.4", pri: "SHOULD", ms: "M3", verify: "auto", status: "todo", text: "Podglad/dekodowanie plikow .rd (Ruida)"}
-  - {id: "REQ-02-088", sec: "2.4", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Eksport pliku .rd dla Ruidy na USB"}
+  - {id: "REQ-02-087", sec: "2.4", pri: "SHOULD", ms: "M3", verify: "auto", status: "deviation", text: "Podglad/dekodowanie plikow .rd (Ruida)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-02-088", sec: "2.4", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Eksport pliku .rd dla Ruidy na USB", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-02-089", sec: "2.4", pri: "MUST", ms: "M2", verify: "auto", status: "verified", text: "Import G-code (.nc, .gc, .gcode) — podglad i uruchamianie", note: "M2.2: import .nc/.gc/.gcode (gcode.import, file.import, przycisk Importuj): interpreter G0-G3/G4/G20/G21/G90/G91/G92/M0-M9/M73/S/F/T, raport, tor jako sciezki, podglad render_preview source=gcode; program zostaje w sesji do uruchomienia (wysylka do urzadzenia w M2.3)"}
   - {id: "REQ-02-090", sec: "2.4", pri: "MUST", ms: "M2", verify: "auto", status: "verified", text: "Eksport G-code", note: "M2.2: eksport G-code (gcode.export, file.export .gcode/.nc/.gc, CLI export --driver); round-trip eksport -> import daje te same odcinki z moca"}
   - {id: "REQ-02-091", sec: "2.4", pri: "MUST", ms: "M1", verify: "auto", status: "verified", text: "Import .lbrn"}
@@ -635,7 +635,7 @@ requirements:
   - {id: "REQ-10-014", sec: "10", pri: "MUST", ms: "M2", verify: "emu", status: "verified", text: "Home", note: "M2.3: home (device.home, $H) na emulatorze z bazowaniem"}
   - {id: "REQ-10-015", sec: "10", pri: "MUST", ms: "M2", verify: "emu", status: "verified", text: "Przesun laser do zaznaczenia", note: "M2.3: device.move_to_selection — punkt ramki zaznaczenia przeliczony wg ustawien startu"}
   - {id: "REQ-10-016", sec: "10", pri: "MUST", ms: "M2", verify: "emu", status: "verified", text: "Ustaw pozycje lasera klikajac w obszarze", note: "M2.3: device.set_position {x, y} — punkt obszaru roboczego (klikniecie; GUI w M2.5)"}
-  - {id: "REQ-10-017", sec: "10", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Wyslij do pamieci sterownika (Ruida/Trocen)"}
+  - {id: "REQ-10-017", sec: "10", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Wyslij do pamieci sterownika (Ruida/Trocen)", note: "Ruida wylaczona z projektu (DEV-007); wysylka do pamieci sterownika pozostaje dla Trocen w M6", deviation: "DEV-007"}
   - {id: "REQ-10-018", sec: "10", pri: "MUST", ms: "M2", verify: "emu", status: "verified", text: "Zapisz na karte SD", note: "M2.3: karta SD FluidNC: XMODEM-CRC po $Xmodem/Receive, $SD/List, $SD/Run, $SD/Delete (device.sd_*); UNVERIFIED do testu sprzetowego"}
   - {id: "REQ-10-019", sec: "10", pri: "MUST", ms: "M2", verify: "auto", status: "verified", text: "Zapisz plik G-code", note: "M2.2: polecenie gcode.export (przycisk Zapisz G-code na pasku glownym, data-command), CLI export, MCP export_machine_file"}
   - {id: "REQ-10-020", sec: "10", pri: "MUST", ms: "M2", verify: "emu", status: "verified", text: "Kolejka zadan (wiele zadan w sekwencji)", note: "M2.3: kolejka zadan w watku polaczenia (job.start queue=true, queue_job)"}
@@ -671,7 +671,7 @@ requirements:
   - {id: "REQ-11-026", sec: "11", pri: "MUST", ms: "M6", verify: "manual", status: "todo", text: "Projekcja (projektor nad stolem jako podglad)"}
   - {id: "REQ-11-027", sec: "11", pri: "MUST", ms: "M6", verify: "auto", status: "todo", text: "Edytowalna checklista bezpieczenstwa przed startem"}
   - {id: "REQ-11-028", sec: "11", pri: "MUST", ms: "M2", verify: "emu", status: "verified", text: "Sonda Z: GRBL G38", note: "M2.3: sonda Z G38.2 z wynikiem [PRB] (device.probe_z, set_zero), ALARM:5 bez kontaktu"}
-  - {id: "REQ-11-029", sec: "11", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Autofokus Ruida"}
+  - {id: "REQ-11-029", sec: "11", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Autofokus Ruida", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-11-030", sec: "11", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Czujniki wysokosci xTool/Thunder"}
   - {id: "REQ-11-031", sec: "11", pri: "MUST", ms: "M5", verify: "emu", status: "todo", text: "Mapowanie wysokosci powierzchni (mesh) z korekta Z w zadaniu"}
   - {id: "REQ-11-032", sec: "11", pri: "SHOULD", ms: "M7", verify: "auto", status: "todo", text: "Abstrakcja „Tool” w urzadzeniu"}
@@ -825,34 +825,34 @@ requirements:
   - {id: "REQ-13-116", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "xTool: USB (G-code)"}
   - {id: "REQ-13-117", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "xTool: Wi-Fi (HTTP API)", postulat: 124}
   - {id: "REQ-13-118", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "xTool P2: kamera i czujnik wysokosci", postulat: 26}
-  - {id: "REQ-13-119", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6442G"}
-  - {id: "REQ-13-120", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6442S"}
-  - {id: "REQ-13-121", sec: "13.3", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Ruida RDC6445G", note: "sterownik i profil modelu w M3.2 (emulator); test sprzetowy przesuniety do M7 - brak dostepu do maszyny (DEV-005)", deviation: "DEV-005"}
-  - {id: "REQ-13-122", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6445GZ"}
-  - {id: "REQ-13-123", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6332G"}
-  - {id: "REQ-13-124", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6332M"}
-  - {id: "REQ-13-125", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDLC-320A"}
-  - {id: "REQ-13-126", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDC6422G"}
-  - {id: "REQ-13-127", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida R5-DSP"}
-  - {id: "REQ-13-128", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RDV6442G"}
-  - {id: "REQ-13-129", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida KT332N (ARM)"}
-  - {id: "REQ-13-130", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida RD8445"}
-  - {id: "REQ-13-131", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida Hydra/GT5"}
-  - {id: "REQ-13-132", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: UDP 50200->40200 (Ethernet)"}
-  - {id: "REQ-13-133", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: USB-serial"}
-  - {id: "REQ-13-134", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: plik .rd na pendrive"}
-  - {id: "REQ-13-135", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: swizzling bajtow (magic 0x88 domyslnie, konfigurowalny per model)"}
-  - {id: "REQ-13-136", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: suma kontrolna pakietow UDP"}
-  - {id: "REQ-13-137", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: potwierdzenia ACK/NACK"}
-  - {id: "REQ-13-138", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: wysylka calego zadania do pamieci"}
-  - {id: "REQ-13-139", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: start/pauza/stop"}
-  - {id: "REQ-13-140", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: ramka"}
-  - {id: "REQ-13-141", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: odczyt/zapis parametrow maszyny (zakres, przyspieszenia, offset lasera 2, autofokus, rotary)"}
-  - {id: "REQ-13-142", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: lista/uruchamianie/usuwanie plikow w pamieci"}
-  - {id: "REQ-13-143", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: odczyt stanu"}
-  - {id: "REQ-13-144", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: raster natywny ze scan offset"}
-  - {id: "REQ-13-145", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida KT332N: mapowanie osi U/Z (wylaczalne)"}
-  - {id: "REQ-13-146", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Ruida: wrapper UDP zgodny z ZhiYuan"}
+  - {id: "REQ-13-119", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDC6442G", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-120", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDC6442S", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-121", sec: "13.3", pri: "MUST", ms: "M7", verify: "hw", status: "deviation", text: "Ruida RDC6445G", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-122", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDC6445GZ", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-123", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDC6332G", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-124", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDC6332M", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-125", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDLC-320A", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-126", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDC6422G", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-127", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida R5-DSP", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-128", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RDV6442G", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-129", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida KT332N (ARM)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-130", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida RD8445", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-131", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida Hydra/GT5", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-132", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: UDP 50200->40200 (Ethernet)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-133", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: USB-serial", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-134", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: plik .rd na pendrive", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-135", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: swizzling bajtow (magic 0x88 domyslnie, konfigurowalny per model)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-136", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: suma kontrolna pakietow UDP", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-137", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: potwierdzenia ACK/NACK", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-138", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: wysylka calego zadania do pamieci", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-139", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: start/pauza/stop", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-140", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: ramka", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-141", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: odczyt/zapis parametrow maszyny (zakres, przyspieszenia, offset lasera 2, autofokus, rotary)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-142", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: lista/uruchamianie/usuwanie plikow w pamieci", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-143", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: odczyt stanu", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-144", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: raster natywny ze scan offset", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-145", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida KT332N: mapowanie osi U/Z (wylaczalne)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
+  - {id: "REQ-13-146", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Ruida: wrapper UDP zgodny z ZhiYuan", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-13-147", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Trocen AWC708C"}
   - {id: "REQ-13-148", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Trocen AWC708 LITE"}
   - {id: "REQ-13-149", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Trocen AWC608"}
@@ -890,9 +890,9 @@ requirements:
   - {id: "REQ-13-181", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Emblaser 3"}
   - {id: "REQ-13-182", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Emblaser Pro"}
   - {id: "REQ-13-183", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Cubiio 2"}
-  - {id: "REQ-13-184", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Thunder (Ruida)"}
+  - {id: "REQ-13-184", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Thunder (Ruida)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-13-185", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "WeCreat (G-code/HTTP)"}
-  - {id: "REQ-13-186", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Omtech (Ruida)"}
+  - {id: "REQ-13-186", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Omtech (Ruida)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-13-187", sec: "13.3", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Glowforge nieobslugiwany — wyjasnienie w FAQ"}
   - {id: "REQ-13-188", sec: "13.3", pri: "LATER", ms: "LATER", verify: "emu", status: "todo", text: "Trotec/Epilog/ULS przez drukarke wirtualna/sterownik producenta", postulat: 22}
   - {id: "REQ-13-189", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Wirtualna drukarka BurnCraft: „drukuj” z dowolnego programu -> dokument (Windows)", postulat: 36, conflict: true}
@@ -900,7 +900,7 @@ requirements:
   - {id: "REQ-13-191", sec: "13.3", pri: "MUST", ms: "M2", verify: "auto", status: "verified", text: "Urzadzenie fikcyjne/symulator: praca bez maszyny, pelny podglad i eksport", note: "M2.3: urzadzenie fikcyjne Symulator (emulator w procesie) zawsze w machine.list; plan, podglad, eksport i zadania bez maszyny"}
   - {id: "REQ-13-192", sec: "13.3", pri: "MUST", ms: "M2", verify: "emu", status: "verified", text: "Kreator „Znajdz moj laser”: skanowanie portow", note: "M2.3: machine.find: porty z VID/PID i proba GRBL na kolejnych predkosciach, gotowe profile; test z portami-atrapami"}
   - {id: "REQ-13-193", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "verified", text: "Kreator: USB VID/PID", note: "M3.1: machine.find pole usb - urzadzenia znanych rodzin po VID/PID ze stanem dostepu i przewodnikiem; sekcja Urzadzenia USB w oknie Laser; testy na FakeUsb i E2E"}
-  - {id: "REQ-13-194", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "todo", text: "Kreator: UDP broadcast Ruida"}
+  - {id: "REQ-13-194", sec: "13.3", pri: "MUST", ms: "M3", verify: "emu", status: "deviation", text: "Kreator: UDP broadcast Ruida", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-13-195", sec: "13.3", pri: "MUST", ms: "M6", verify: "emu", status: "todo", text: "Kreator: mDNS"}
   - {id: "REQ-13-196", sec: "13.3", pri: "MUST", ms: "M2", verify: "auto", status: "verified", text: "Reczne tworzenie profilu urzadzenia", note: "M2.3: DeviceProfile z walidacja, machine.profile_save/delete, zapis devices.json"}
   - {id: "REQ-13-197", sec: "13.3", pri: "MUST", ms: "M6", verify: "auto", status: "todo", text: "Pakiety producentow (profile, biblioteki materialow, menu linkow) importowane przeciagnieciem"}
@@ -1077,7 +1077,7 @@ requirements:
   - {id: "REQ-18-009", sec: "18", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Rozwiazywanie problemow: jakosc"}
   - {id: "REQ-18-010", sec: "18", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Rozwiazywanie problemow: polaczenie"}
   - {id: "REQ-18-011", sec: "18", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Rozwiazywanie problemow: bledy GRBL"}
-  - {id: "REQ-18-012", sec: "18", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Rozwiazywanie problemow: siec Ruida"}
+  - {id: "REQ-18-012", sec: "18", pri: "MUST", ms: "M7", verify: "manual", status: "deviation", text: "Rozwiazywanie problemow: siec Ruida", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-18-013", sec: "18", pri: "MUST", ms: "M7", verify: "manual", status: "todo", text: "Rozwiazywanie problemow: sterowniki galvo"}
   - {id: "REQ-18-014", sec: "18", pri: "MUST", ms: "M0", verify: "manual", status: "verified", text: "Dokumentacja MCP: lista narzedzi z przykladami JSON", procedure: "docs/procedures/M0-manual-checks.md"}
   - {id: "REQ-18-015", sec: "18", pri: "MUST", ms: "M0", verify: "manual", status: "verified", text: "Przyklad konfiguracji claude_desktop_config.json", procedure: "docs/procedures/M0-manual-checks.md"}
@@ -1092,7 +1092,7 @@ requirements:
   - {id: "REQ-19-005", sec: "19", pri: "MUST", ms: "M1", verify: "auto", status: "verified", text: "Fuzzing importera .lbrn2", procedure: "docs/procedures/M1-manual-checks.md"}
   - {id: "REQ-19-006", sec: "19", pri: "MUST", ms: "M2", verify: "auto", status: "verified", text: "Testy golden kompilatorow sterownikow (projekt referencyjny -> bajty/G-code)", note: "M2.2: testy golden crates/bc-drivers/tests/golden (projekt referencyjny .bcraft -> grbl i gcode, raster z bitmapy) bajt w bajt; determinizm dla 1/2/4/8 watkow; aktualizacja BC_UPDATE_GOLDEN=1"}
   - {id: "REQ-19-007", sec: "19", pri: "MUST", ms: "M2", verify: "auto", status: "verified", text: "Emulator GRBL (grbl-sim + symulator bufora)", note: "M2.3: wlasny emulator GRBL w testach na wszystkich platformach; test porownawczy z grbl-sim (budowany ze zrodel GRBL w CI na Linuksie, poza repozytorium)"}
-  - {id: "REQ-19-008", sec: "19", pri: "MUST", ms: "M3", verify: "auto", status: "todo", text: "Emulator Ruida (serwer UDP z ACK, dekodowanie swizzlingu, wizualizacja ruchu)"}
+  - {id: "REQ-19-008", sec: "19", pri: "MUST", ms: "M3", verify: "auto", status: "deviation", text: "Emulator Ruida (serwer UDP z ACK, dekodowanie swizzlingu, wizualizacja ruchu)", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-19-009", sec: "19", pri: "MUST", ms: "M3", verify: "auto", status: "todo", text: "Emulator Lihuiyu (pakiety z CRC, stany BUSY/OK)"}
   - {id: "REQ-19-010", sec: "19", pri: "MUST", ms: "M5", verify: "auto", status: "todo", text: "Emulator BJJCZ (listy polecen)"}
   - {id: "REQ-19-011", sec: "19", pri: "MUST", ms: "M6", verify: "auto", status: "todo", text: "Mock xTool HTTP"}
@@ -1102,7 +1102,7 @@ requirements:
   - {id: "REQ-19-015", sec: "19", pri: "MUST", ms: "M6", verify: "auto", status: "todo", text: "Testy MCP: start_job bez tokenu -> odmowa"}
   - {id: "REQ-19-016", sec: "19", pri: "MUST", ms: "M3", verify: "hw", status: "todo", text: "Testy sprzetowe z checklista: K40 M2 Nano"}
   - {id: "REQ-19-017", sec: "19", pri: "MUST", ms: "M2", verify: "hw", status: "verified", text: "Testy sprzetowe: GRBL diodowy", note: "test zleceniodawcy 2026-11-05: Two Trees TTS-20 PRO, MKS DLC32 V4.00, GRBL 1.1h, CH340 COM3; 14/16 punktow tak (polaczenie, Konsola, bazowanie, alarm i $X, jog XY, pozycje, znacznik glowicy, podglad, ramka, ciecie 30x30 i fi10, grawer, pauza/wznowienie, Stop z ALARM:3, start od miejsca), pominiete: os Z (brak), odlaczenie USB (decyzja zleceniodawcy); 5 usterek poprawionych w M2.5 (alarm po $X/$H, odmiana Two Trees, obszar z $130/$131, kinematyka maszyny w estymacji, checklista kroku 9); wyniki w docs/hardware-matrix.md", procedure: "docs/procedures/M2-hardware-grbl.md"}
-  - {id: "REQ-19-018", sec: "19", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Testy sprzetowe: Ruida RDC6445", note: "przesuniete z M3 do M7 - brak dostepu do maszyny; checklista powstaje w M3 (DEV-005)", deviation: "DEV-005"}
+  - {id: "REQ-19-018", sec: "19", pri: "MUST", ms: "M7", verify: "hw", status: "deviation", text: "Testy sprzetowe: Ruida RDC6445", note: "Ruida wylaczona z projektu - decyzja zleceniodawcy 2026-11-07 (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-19-019", sec: "19", pri: "MUST", ms: "M5", verify: "hw", status: "todo", text: "Testy sprzetowe: galvo LMCV4"}
   - {id: "REQ-19-020", sec: "19", pri: "MUST", ms: "M0", verify: "auto", status: "verified", text: "CI: Windows", procedure: "docs/procedures/M0-manual-checks.md"}
   - {id: "REQ-19-021", sec: "19", pri: "MUST", ms: "M0", verify: "auto", status: "verified", text: "CI: macOS x64", procedure: "docs/procedures/M0-manual-checks.md"}
@@ -1117,7 +1117,7 @@ requirements:
   - {id: "REQ-19-030", sec: "19", pri: "MUST", ms: "M6", verify: "auto", status: "todo", text: "Obraz Bridge"}
   - {id: "REQ-19-031", sec: "19", pri: "MUST", ms: "M7", verify: "auto", status: "todo", text: "Akceptacja 1: .lbrn2 z 10 warstwami -> identyczna geometria (+-0,01 mm)"}
   - {id: "REQ-19-032", sec: "19", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Akceptacja 2: K40 M2 Nano — jog, home, ramka, ciecie wektorowe, grawer rastrowy na sprzecie"}
-  - {id: "REQ-19-033", sec: "19", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Akceptacja 3: GRBL i Ruida — pelny cykl zadania z pauza/wznowieniem/stopem"}
+  - {id: "REQ-19-033", sec: "19", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Akceptacja 3: GRBL i Ruida — pelny cykl zadania z pauza/wznowieniem/stopem", note: "test akceptacyjny tylko dla GRBL - Ruida wylaczona z projektu (DEV-007)", deviation: "DEV-007"}
   - {id: "REQ-19-034", sec: "19", pri: "MUST", ms: "M7", verify: "hw", status: "todo", text: "Akceptacja 4: galvo LMCV4 — markowanie z hatchami i rotary"}
   - {id: "REQ-19-035", sec: "19", pri: "MUST", ms: "M7", verify: "auto", status: "todo", text: "Akceptacja 5: agent MCP bez GUI wykonuje scenariusz E2E do eksportu pliku, start lasera wymaga potwierdzenia"}
   - {id: "REQ-19-036", sec: "19", pri: "MUST", ms: "M7", verify: "auto", status: "todo", text: "Akceptacja 6: wszystkie [MUST] verified lub zatwierdzone odstepstwo, req-check przechodzi w CI"}

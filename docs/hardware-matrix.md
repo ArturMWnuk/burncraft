@@ -11,7 +11,7 @@ Stan na M2.5 (2026-11-07): sterownik GRBL (serial, TCP, WebSocket) z odmianami d
 | GRBL i pochodne | 0.9, 1.1, grblHAL, FluidNC, LPC, ESP32, M3 + producenci (REQ-13-050, 053…091) | M2 | emulator | M2.2: eksport G-code; M2.3: połączenie, strumieniowanie, jog, ramki, ustawienia, sonda, karta SD (FluidNC) na emulatorze i grbl-sim; szczegóły producentów UNVERIFIED |
 | Smoothieware, Marlin, RRF/Duet, CNC ogólny | (REQ-13-092…108) | M2/M6 | emulator (CNC ogólny: eksport) | M2.2: sterownik `gcode` (Mach3/Mach4, UCCNC, Masso, LinuxCNC) — szablony, G20/G21, makra; Smoothie/Marlin/RRF od M3/M6 |
 | xTool | D1…F2, Wi-Fi HTTP (REQ-13-109…118) | M6 | — | |
-| Ruida | RDC6442G…Hydra/GT5 (REQ-13-119…146) | M3 | — | |
+| Ruida | RDC6442G…Hydra/GT5, Thunder, Omtech (REQ-13-119…146, 184, 186) | — | **nieobsługiwane** | wyłączone z projektu decyzją zleceniodawcy 2026-11-07 (DEV-007) |
 | Trocen, TopWisdom | (REQ-13-147…154) | M6 | — | do zbadania |
 | Leetro | MPC65xx (REQ-13-155) | M7 | — | SHOULD |
 | LightObject, Gweike | X7, T9, G2, M3 Ultra (REQ-13-156…159) | M6 | — | do zbadania |

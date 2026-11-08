@@ -2,6 +2,8 @@
 
 Status: przyjęty 2026-11-07 · Etap: M3.1 · Wymagania: REQ-00-018, REQ-13-019, 020, 021, 023, 193
 
+Aktualizacja 2026-11-07: Ruida została wyłączona z projektu (DEV-007). Wzmianki o Ruidzie poniżej opisują stan z chwili decyzji. Transport UDP zostaje jako ogólny transport dla przyszłych sterowników sieciowych.
+
 ## Kontekst
 
 Etap M3 wprowadza sterowniki K40 Lihuiyu, Moshi i Ruida. Ich protokoły nie mają oficjalnej, publicznej dokumentacji producentów. REQ-00-018 wymaga, żeby wiedza o protokołach pochodziła wyłącznie z publicznych, otwartych źródeł, z poszanowaniem licencji. Zasada clean-room (REQ-00-014) zabrania kopiowania kodu i zasobów innych programów do laserów.

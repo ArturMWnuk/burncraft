@@ -66,7 +66,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 |---|---|---|---|---|---|---|---|---|---|
 | 0 | 20 | 20 | 0 | 0 | 7 | 0 | 0 | 13 | 0 |
 | 1 | 44 | 41 | 3 | 0 | 36 | 0 | 0 | 8 | 0 |
-| 2 | 111 | 101 | 10 | 0 | 67 | 0 | 0 | 44 | 0 |
+| 2 | 111 | 101 | 10 | 0 | 67 | 0 | 0 | 42 | 2 |
 | 3 | 83 | 83 | 0 | 0 | 52 | 0 | 0 | 31 | 0 |
 | 4 | 117 | 108 | 9 | 0 | 82 | 0 | 0 | 35 | 0 |
 | 5 | 58 | 58 | 0 | 0 | 0 | 0 | 0 | 58 | 0 |
@@ -75,18 +75,18 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | 8 | 19 | 19 | 0 | 0 | 17 | 0 | 0 | 2 | 0 |
 | 9 | 17 | 17 | 0 | 0 | 8 | 0 | 0 | 9 | 0 |
 | 10 | 24 | 24 | 0 | 0 | 17 | 0 | 0 | 7 | 0 |
-| 11 | 38 | 31 | 7 | 0 | 1 | 0 | 0 | 37 | 0 |
+| 11 | 38 | 31 | 7 | 0 | 1 | 0 | 0 | 36 | 1 |
 | 12 | 26 | 26 | 0 | 0 | 0 | 0 | 0 | 26 | 0 |
-| 13 | 199 | 195 | 2 | 2 | 73 | 0 | 0 | 126 | 0 |
+| 13 | 199 | 195 | 2 | 2 | 73 | 0 | 0 | 95 | 31 |
 | 14 | 32 | 27 | 5 | 0 | 8 | 0 | 0 | 24 | 0 |
 | 15 | 108 | 108 | 0 | 0 | 74 | 0 | 0 | 34 | 0 |
 | 16 | 13 | 13 | 0 | 0 | 7 | 0 | 0 | 6 | 0 |
 | 17 | 7 | 0 | 5 | 2 | 0 | 0 | 0 | 7 | 0 |
-| 18 | 19 | 19 | 0 | 0 | 6 | 0 | 0 | 13 | 0 |
-| 19 | 36 | 36 | 0 | 0 | 15 | 0 | 0 | 21 | 0 |
+| 18 | 19 | 19 | 0 | 0 | 6 | 0 | 0 | 12 | 1 |
+| 19 | 36 | 36 | 0 | 0 | 15 | 0 | 0 | 19 | 2 |
 | 20 | 12 | 12 | 0 | 0 | 11 | 0 | 0 | 0 | 1 |
 | 21 | 15 | 15 | 0 | 0 | 14 | 0 | 0 | 1 | 0 |
-| **Razem** | **1144** | 1099 | 41 | 4 | 546 | 0 | 0 | 597 | 1 |
+| **Razem** | **1144** | 1099 | 41 | 4 | 546 | 0 | 0 | 560 | 38 |
 
 ### Etapy
 
@@ -95,11 +95,11 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | M0 | 112 | 112 | closed |
 | M1 | 202 | 202 | closed |
 | M2 | 227 | 227 | closed |
-| M3 | 67 | 6 | planned |
+| M3 | 66 | 40 | planned |
 | M4 | 170 | 0 | planned |
 | M5 | 108 | 0 | planned |
-| M6 | 167 | 0 | planned |
-| M7 | 87 | 0 | planned |
+| M6 | 168 | 0 | planned |
+| M7 | 87 | 3 | planned |
 | LATER | 4 | 0 | planned |
 
 ### Pełna lista wymagań
@@ -269,8 +269,8 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-02-084 | 2.4 | SHOULD | M7 | auto | todo | Import DWG przez ODA/LibreDWG [POSTULAT 70] |
 | REQ-02-085 | 2.4 | SHOULD | M7 | auto | todo | Import CDR przez libcdr [POSTULAT 62] |
 | REQ-02-086 | 2.4 | SHOULD | M7 | auto | todo | Import RLD (RDWorks) [POSTULAT 44] |
-| REQ-02-087 | 2.4 | SHOULD | M3 | auto | todo | Podglad/dekodowanie plikow .rd (Ruida) |
-| REQ-02-088 | 2.4 | MUST | M3 | emu | todo | Eksport pliku .rd dla Ruidy na USB |
+| REQ-02-087 | 2.4 | SHOULD | M3 | auto | deviation | Podglad/dekodowanie plikow .rd (Ruida) |
+| REQ-02-088 | 2.4 | MUST | M3 | emu | deviation | Eksport pliku .rd dla Ruidy na USB |
 | REQ-02-089 | 2.4 | MUST | M2 | auto | verified | Import G-code (.nc, .gc, .gcode) — podglad i uruchamianie |
 | REQ-02-090 | 2.4 | MUST | M2 | auto | verified | Eksport G-code |
 | REQ-02-091 | 2.4 | MUST | M1 | auto | verified | Import .lbrn |
@@ -790,7 +790,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-10-014 | 10 | MUST | M2 | emu | verified | Home |
 | REQ-10-015 | 10 | MUST | M2 | emu | verified | Przesun laser do zaznaczenia |
 | REQ-10-016 | 10 | MUST | M2 | emu | verified | Ustaw pozycje lasera klikajac w obszarze |
-| REQ-10-017 | 10 | MUST | M3 | emu | todo | Wyslij do pamieci sterownika (Ruida/Trocen) |
+| REQ-10-017 | 10 | MUST | M6 | emu | todo | Wyslij do pamieci sterownika (Ruida/Trocen) |
 | REQ-10-018 | 10 | MUST | M2 | emu | verified | Zapisz na karte SD |
 | REQ-10-019 | 10 | MUST | M2 | auto | verified | Zapisz plik G-code |
 | REQ-10-020 | 10 | MUST | M2 | emu | verified | Kolejka zadan (wiele zadan w sekwencji) |
@@ -831,7 +831,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-11-026 | 11 | MUST | M6 | manual | todo | Projekcja (projektor nad stolem jako podglad) |
 | REQ-11-027 | 11 | MUST | M6 | auto | todo | Edytowalna checklista bezpieczenstwa przed startem |
 | REQ-11-028 | 11 | MUST | M2 | emu | verified | Sonda Z: GRBL G38 |
-| REQ-11-029 | 11 | MUST | M3 | emu | todo | Autofokus Ruida |
+| REQ-11-029 | 11 | MUST | M3 | emu | deviation | Autofokus Ruida |
 | REQ-11-030 | 11 | MUST | M6 | emu | todo | Czujniki wysokosci xTool/Thunder |
 | REQ-11-031 | 11 | MUST | M5 | emu | todo | Mapowanie wysokosci powierzchni (mesh) z korekta Z w zadaniu |
 | REQ-11-032 | 11 | SHOULD | M7 | auto | todo | Abstrakcja „Tool” w urzadzeniu |
@@ -995,34 +995,34 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-116 | 13.3 | MUST | M6 | emu | todo | xTool: USB (G-code) |
 | REQ-13-117 | 13.3 | MUST | M6 | emu | todo | xTool: Wi-Fi (HTTP API) [POSTULAT 124] |
 | REQ-13-118 | 13.3 | MUST | M6 | emu | todo | xTool P2: kamera i czujnik wysokosci [POSTULAT 26] |
-| REQ-13-119 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6442G |
-| REQ-13-120 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6442S |
-| REQ-13-121 | 13.3 | MUST | M7 | hw | todo | Ruida RDC6445G |
-| REQ-13-122 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6445GZ |
-| REQ-13-123 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6332G |
-| REQ-13-124 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6332M |
-| REQ-13-125 | 13.3 | MUST | M3 | emu | todo | Ruida RDLC-320A |
-| REQ-13-126 | 13.3 | MUST | M3 | emu | todo | Ruida RDC6422G |
-| REQ-13-127 | 13.3 | MUST | M3 | emu | todo | Ruida R5-DSP |
-| REQ-13-128 | 13.3 | MUST | M3 | emu | todo | Ruida RDV6442G |
-| REQ-13-129 | 13.3 | MUST | M3 | emu | todo | Ruida KT332N (ARM) |
-| REQ-13-130 | 13.3 | MUST | M3 | emu | todo | Ruida RD8445 |
-| REQ-13-131 | 13.3 | MUST | M3 | emu | todo | Ruida Hydra/GT5 |
-| REQ-13-132 | 13.3 | MUST | M3 | emu | todo | Ruida: UDP 50200->40200 (Ethernet) |
-| REQ-13-133 | 13.3 | MUST | M3 | emu | todo | Ruida: USB-serial |
-| REQ-13-134 | 13.3 | MUST | M3 | emu | todo | Ruida: plik .rd na pendrive |
-| REQ-13-135 | 13.3 | MUST | M3 | emu | todo | Ruida: swizzling bajtow (magic 0x88 domyslnie, konfigurowalny per model) |
-| REQ-13-136 | 13.3 | MUST | M3 | emu | todo | Ruida: suma kontrolna pakietow UDP |
-| REQ-13-137 | 13.3 | MUST | M3 | emu | todo | Ruida: potwierdzenia ACK/NACK |
-| REQ-13-138 | 13.3 | MUST | M3 | emu | todo | Ruida: wysylka calego zadania do pamieci |
-| REQ-13-139 | 13.3 | MUST | M3 | emu | todo | Ruida: start/pauza/stop |
-| REQ-13-140 | 13.3 | MUST | M3 | emu | todo | Ruida: ramka |
-| REQ-13-141 | 13.3 | MUST | M3 | emu | todo | Ruida: odczyt/zapis parametrow maszyny (zakres, przyspieszenia, offset lasera 2, autofokus, rotary) |
-| REQ-13-142 | 13.3 | MUST | M3 | emu | todo | Ruida: lista/uruchamianie/usuwanie plikow w pamieci |
-| REQ-13-143 | 13.3 | MUST | M3 | emu | todo | Ruida: odczyt stanu |
-| REQ-13-144 | 13.3 | MUST | M3 | emu | todo | Ruida: raster natywny ze scan offset |
-| REQ-13-145 | 13.3 | MUST | M3 | emu | todo | Ruida KT332N: mapowanie osi U/Z (wylaczalne) |
-| REQ-13-146 | 13.3 | MUST | M3 | emu | todo | Ruida: wrapper UDP zgodny z ZhiYuan |
+| REQ-13-119 | 13.3 | MUST | M3 | emu | deviation | Ruida RDC6442G |
+| REQ-13-120 | 13.3 | MUST | M3 | emu | deviation | Ruida RDC6442S |
+| REQ-13-121 | 13.3 | MUST | M7 | hw | deviation | Ruida RDC6445G |
+| REQ-13-122 | 13.3 | MUST | M3 | emu | deviation | Ruida RDC6445GZ |
+| REQ-13-123 | 13.3 | MUST | M3 | emu | deviation | Ruida RDC6332G |
+| REQ-13-124 | 13.3 | MUST | M3 | emu | deviation | Ruida RDC6332M |
+| REQ-13-125 | 13.3 | MUST | M3 | emu | deviation | Ruida RDLC-320A |
+| REQ-13-126 | 13.3 | MUST | M3 | emu | deviation | Ruida RDC6422G |
+| REQ-13-127 | 13.3 | MUST | M3 | emu | deviation | Ruida R5-DSP |
+| REQ-13-128 | 13.3 | MUST | M3 | emu | deviation | Ruida RDV6442G |
+| REQ-13-129 | 13.3 | MUST | M3 | emu | deviation | Ruida KT332N (ARM) |
+| REQ-13-130 | 13.3 | MUST | M3 | emu | deviation | Ruida RD8445 |
+| REQ-13-131 | 13.3 | MUST | M3 | emu | deviation | Ruida Hydra/GT5 |
+| REQ-13-132 | 13.3 | MUST | M3 | emu | deviation | Ruida: UDP 50200->40200 (Ethernet) |
+| REQ-13-133 | 13.3 | MUST | M3 | emu | deviation | Ruida: USB-serial |
+| REQ-13-134 | 13.3 | MUST | M3 | emu | deviation | Ruida: plik .rd na pendrive |
+| REQ-13-135 | 13.3 | MUST | M3 | emu | deviation | Ruida: swizzling bajtow (magic 0x88 domyslnie, konfigurowalny per model) |
+| REQ-13-136 | 13.3 | MUST | M3 | emu | deviation | Ruida: suma kontrolna pakietow UDP |
+| REQ-13-137 | 13.3 | MUST | M3 | emu | deviation | Ruida: potwierdzenia ACK/NACK |
+| REQ-13-138 | 13.3 | MUST | M3 | emu | deviation | Ruida: wysylka calego zadania do pamieci |
+| REQ-13-139 | 13.3 | MUST | M3 | emu | deviation | Ruida: start/pauza/stop |
+| REQ-13-140 | 13.3 | MUST | M3 | emu | deviation | Ruida: ramka |
+| REQ-13-141 | 13.3 | MUST | M3 | emu | deviation | Ruida: odczyt/zapis parametrow maszyny (zakres, przyspieszenia, offset lasera 2, autofokus, rotary) |
+| REQ-13-142 | 13.3 | MUST | M3 | emu | deviation | Ruida: lista/uruchamianie/usuwanie plikow w pamieci |
+| REQ-13-143 | 13.3 | MUST | M3 | emu | deviation | Ruida: odczyt stanu |
+| REQ-13-144 | 13.3 | MUST | M3 | emu | deviation | Ruida: raster natywny ze scan offset |
+| REQ-13-145 | 13.3 | MUST | M3 | emu | deviation | Ruida KT332N: mapowanie osi U/Z (wylaczalne) |
+| REQ-13-146 | 13.3 | MUST | M3 | emu | deviation | Ruida: wrapper UDP zgodny z ZhiYuan |
 | REQ-13-147 | 13.3 | MUST | M6 | emu | todo | Trocen AWC708C |
 | REQ-13-148 | 13.3 | MUST | M6 | emu | todo | Trocen AWC708 LITE |
 | REQ-13-149 | 13.3 | MUST | M6 | emu | todo | Trocen AWC608 |
@@ -1060,9 +1060,9 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-181 | 13.3 | MUST | M6 | emu | todo | Emblaser 3 |
 | REQ-13-182 | 13.3 | MUST | M6 | emu | todo | Emblaser Pro |
 | REQ-13-183 | 13.3 | MUST | M6 | emu | todo | Cubiio 2 |
-| REQ-13-184 | 13.3 | MUST | M3 | emu | todo | Thunder (Ruida) |
+| REQ-13-184 | 13.3 | MUST | M3 | emu | deviation | Thunder (Ruida) |
 | REQ-13-185 | 13.3 | MUST | M6 | emu | todo | WeCreat (G-code/HTTP) |
-| REQ-13-186 | 13.3 | MUST | M3 | emu | todo | Omtech (Ruida) |
+| REQ-13-186 | 13.3 | MUST | M3 | emu | deviation | Omtech (Ruida) |
 | REQ-13-187 | 13.3 | MUST | M7 | manual | todo | Glowforge nieobslugiwany — wyjasnienie w FAQ |
 | REQ-13-188 | 13.3 | LATER | LATER | emu | todo | Trotec/Epilog/ULS przez drukarke wirtualna/sterownik producenta [POSTULAT 22] |
 | REQ-13-189 | 13.3 | MUST | M6 | emu | todo | Wirtualna drukarka BurnCraft: „drukuj” z dowolnego programu -> dokument (Windows) [POSTULAT 36] ⚠ konflikt priorytetu |
@@ -1070,7 +1070,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-191 | 13.3 | MUST | M2 | auto | verified | Urzadzenie fikcyjne/symulator: praca bez maszyny, pelny podglad i eksport |
 | REQ-13-192 | 13.3 | MUST | M2 | emu | verified | Kreator „Znajdz moj laser”: skanowanie portow |
 | REQ-13-193 | 13.3 | MUST | M3 | emu | verified | Kreator: USB VID/PID |
-| REQ-13-194 | 13.3 | MUST | M3 | emu | todo | Kreator: UDP broadcast Ruida |
+| REQ-13-194 | 13.3 | MUST | M3 | emu | deviation | Kreator: UDP broadcast Ruida |
 | REQ-13-195 | 13.3 | MUST | M6 | emu | todo | Kreator: mDNS |
 | REQ-13-196 | 13.3 | MUST | M2 | auto | verified | Reczne tworzenie profilu urzadzenia |
 | REQ-13-197 | 13.3 | MUST | M6 | auto | todo | Pakiety producentow (profile, biblioteki materialow, menu linkow) importowane przeciagnieciem |
@@ -1272,7 +1272,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-18-009 | 18 | MUST | M7 | manual | todo | Rozwiazywanie problemow: jakosc |
 | REQ-18-010 | 18 | MUST | M7 | manual | todo | Rozwiazywanie problemow: polaczenie |
 | REQ-18-011 | 18 | MUST | M7 | manual | todo | Rozwiazywanie problemow: bledy GRBL |
-| REQ-18-012 | 18 | MUST | M7 | manual | todo | Rozwiazywanie problemow: siec Ruida |
+| REQ-18-012 | 18 | MUST | M7 | manual | deviation | Rozwiazywanie problemow: siec Ruida |
 | REQ-18-013 | 18 | MUST | M7 | manual | todo | Rozwiazywanie problemow: sterowniki galvo |
 | REQ-18-014 | 18 | MUST | M0 | manual | verified | Dokumentacja MCP: lista narzedzi z przykladami JSON |
 | REQ-18-015 | 18 | MUST | M0 | manual | verified | Przyklad konfiguracji claude_desktop_config.json |
@@ -1292,7 +1292,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-19-005 | 19 | MUST | M1 | auto | verified | Fuzzing importera .lbrn2 |
 | REQ-19-006 | 19 | MUST | M2 | auto | verified | Testy golden kompilatorow sterownikow (projekt referencyjny -> bajty/G-code) |
 | REQ-19-007 | 19 | MUST | M2 | auto | verified | Emulator GRBL (grbl-sim + symulator bufora) |
-| REQ-19-008 | 19 | MUST | M3 | auto | todo | Emulator Ruida (serwer UDP z ACK, dekodowanie swizzlingu, wizualizacja ruchu) |
+| REQ-19-008 | 19 | MUST | M3 | auto | deviation | Emulator Ruida (serwer UDP z ACK, dekodowanie swizzlingu, wizualizacja ruchu) |
 | REQ-19-009 | 19 | MUST | M3 | auto | todo | Emulator Lihuiyu (pakiety z CRC, stany BUSY/OK) |
 | REQ-19-010 | 19 | MUST | M5 | auto | todo | Emulator BJJCZ (listy polecen) |
 | REQ-19-011 | 19 | MUST | M6 | auto | todo | Mock xTool HTTP |
@@ -1302,7 +1302,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-19-015 | 19 | MUST | M6 | auto | todo | Testy MCP: start_job bez tokenu -> odmowa |
 | REQ-19-016 | 19 | MUST | M3 | hw | todo | Testy sprzetowe z checklista: K40 M2 Nano |
 | REQ-19-017 | 19 | MUST | M2 | hw | verified | Testy sprzetowe: GRBL diodowy |
-| REQ-19-018 | 19 | MUST | M7 | hw | todo | Testy sprzetowe: Ruida RDC6445 |
+| REQ-19-018 | 19 | MUST | M7 | hw | deviation | Testy sprzetowe: Ruida RDC6445 |
 | REQ-19-019 | 19 | MUST | M5 | hw | todo | Testy sprzetowe: galvo LMCV4 |
 | REQ-19-020 | 19 | MUST | M0 | auto | verified | CI: Windows |
 | REQ-19-021 | 19 | MUST | M0 | auto | verified | CI: macOS x64 |
