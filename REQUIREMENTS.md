@@ -67,7 +67,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | 0 | 20 | 20 | 0 | 0 | 7 | 0 | 0 | 13 | 0 |
 | 1 | 44 | 41 | 3 | 0 | 36 | 0 | 0 | 8 | 0 |
 | 2 | 111 | 101 | 10 | 0 | 67 | 0 | 0 | 42 | 2 |
-| 3 | 83 | 83 | 0 | 0 | 52 | 0 | 0 | 31 | 0 |
+| 3 | 83 | 83 | 0 | 0 | 53 | 0 | 0 | 30 | 0 |
 | 4 | 117 | 108 | 9 | 0 | 82 | 0 | 0 | 35 | 0 |
 | 5 | 58 | 58 | 0 | 0 | 0 | 0 | 0 | 58 | 0 |
 | 6 | 42 | 42 | 0 | 0 | 0 | 0 | 0 | 42 | 0 |
@@ -77,16 +77,16 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | 10 | 24 | 24 | 0 | 0 | 17 | 0 | 0 | 7 | 0 |
 | 11 | 38 | 31 | 7 | 0 | 1 | 0 | 0 | 36 | 1 |
 | 12 | 26 | 26 | 0 | 0 | 0 | 0 | 0 | 26 | 0 |
-| 13 | 199 | 195 | 2 | 2 | 92 | 0 | 3 | 73 | 31 |
+| 13 | 199 | 195 | 2 | 2 | 93 | 0 | 3 | 72 | 31 |
 | 14 | 32 | 27 | 5 | 0 | 8 | 0 | 0 | 24 | 0 |
 | 15 | 108 | 108 | 0 | 0 | 74 | 0 | 0 | 34 | 0 |
 | 16 | 13 | 13 | 0 | 0 | 7 | 0 | 0 | 6 | 0 |
 | 17 | 7 | 0 | 5 | 2 | 0 | 0 | 0 | 7 | 0 |
 | 18 | 19 | 19 | 0 | 0 | 6 | 0 | 0 | 12 | 1 |
-| 19 | 36 | 36 | 0 | 0 | 16 | 0 | 0 | 18 | 2 |
+| 19 | 36 | 36 | 0 | 0 | 16 | 0 | 1 | 17 | 2 |
 | 20 | 12 | 12 | 0 | 0 | 11 | 0 | 0 | 0 | 1 |
 | 21 | 15 | 15 | 0 | 0 | 14 | 0 | 0 | 1 | 0 |
-| **Razem** | **1144** | 1099 | 41 | 4 | 566 | 0 | 3 | 537 | 38 |
+| **Razem** | **1144** | 1099 | 41 | 4 | 568 | 0 | 4 | 534 | 38 |
 
 ### Etapy
 
@@ -95,7 +95,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | M0 | 112 | 112 | closed |
 | M1 | 202 | 202 | closed |
 | M2 | 227 | 227 | closed |
-| M3 | 66 | 60 | planned |
+| M3 | 66 | 62 | planned |
 | M4 | 170 | 0 | planned |
 | M5 | 108 | 0 | planned |
 | M6 | 168 | 0 | planned |
@@ -340,7 +340,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-03-039 | 3 | MUST | M2 | manual | verified | Okno Przesun: zapamietane pozycje XY z nazwami [POSTULAT 21] |
 | REQ-03-040 | 3 | MUST | M2 | manual | verified | Okno Konsola z kolorowaniem skladni i historia |
 | REQ-03-041 | 3 | MUST | M2 | manual | verified | Okno Makra |
-| REQ-03-042 | 3 | MUST | M3 | manual | todo | Okno Lista plikow na sterowniku |
+| REQ-03-042 | 3 | MUST | M3 | manual | verified | Okno Lista plikow na sterowniku |
 | REQ-03-043 | 3 | MUST | M4 | manual | todo | Okno Biblioteka materialow |
 | REQ-03-044 | 3 | MUST | M4 | manual | todo | Okno Biblioteka grafik |
 | REQ-03-045 | 3 | MUST | M5 | manual | todo | Okno Kamera |
@@ -890,7 +890,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-13-011 | 13.1 | MUST | M2 | emu | verified | Driver: pause() / resume() |
 | REQ-13-012 | 13.1 | MUST | M2 | emu | verified | Driver: stop() — zawsze dozwolony, najwyzszy priorytet |
 | REQ-13-013 | 13.1 | MUST | M2 | emu | verified | Driver: read_settings() / write_settings() z backupem przed zapisem |
-| REQ-13-014 | 13.1 | MUST | M3 | emu | todo | Driver: list_files() / run_file() / delete_file() gdy wspierane |
+| REQ-13-014 | 13.1 | MUST | M3 | emu | verified | Driver: list_files() / run_file() / delete_file() gdy wspierane |
 | REQ-13-015 | 13.1 | MUST | M2 | auto | verified | Driver: compile(Job) — offline eksport pliku dla sterownika |
 | REQ-13-016 | 13.1 | MUST | M2 | auto | verified | Kompilator zadan niezalezny od transportu |
 | REQ-13-017 | 13.1 | MUST | M2 | emu | verified | Kazdy sterownik ma emulator/symulator do testow |
@@ -1300,7 +1300,7 @@ Jeśli zleceniodawca woli obniżyć któryś z tych priorytetów (np. przenieś�
 | REQ-19-013 | 19 | MUST | M1 | auto | verified | Testy E2E GUI (Playwright) |
 | REQ-19-014 | 19 | MUST | M6 | auto | todo | Testy MCP: scenariusz pudelko 100x60x40 ze sklejki 3 mm -> plan -> eksport G-code |
 | REQ-19-015 | 19 | MUST | M6 | auto | todo | Testy MCP: start_job bez tokenu -> odmowa |
-| REQ-19-016 | 19 | MUST | M3 | hw | todo | Testy sprzetowe z checklista: K40 M2 Nano |
+| REQ-19-016 | 19 | MUST | M3 | hw | in_progress | Testy sprzetowe z checklista: K40 M2 Nano |
 | REQ-19-017 | 19 | MUST | M2 | hw | verified | Testy sprzetowe: GRBL diodowy |
 | REQ-19-018 | 19 | MUST | M7 | hw | deviation | Testy sprzetowe: Ruida RDC6445 |
 | REQ-19-019 | 19 | MUST | M5 | hw | todo | Testy sprzetowe: galvo LMCV4 |

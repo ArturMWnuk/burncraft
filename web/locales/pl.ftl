@@ -531,3 +531,27 @@ k40-scale-y = Korekcja skali Y
 k40-fixed = Urządzenie fikcyjne: ustawienia płyty są stałe.
 usb-add-k40 = Dodaj K40 (Lihuiyu)
 usb-add-moshi = Dodaj Moshi
+
+# Okno Lista plików na sterowniku (M3.4, REQ-03-042)
+laser-files = Pliki na sterowniku
+files-title = Lista plików na sterowniku
+files-device = Urządzenie: { $device }
+files-no-device = Połącz urządzenie, aby zobaczyć pliki w jego pamięci.
+files-unsupported = Urządzenie { $device } nie ma pamięci plików. Zadanie wysyłaj przyciskiem Start w oknie Laser.
+files-empty = Brak plików na karcie.
+files-col-name = Plik
+files-col-size = Rozmiar
+files-total = Plików: { $count }, razem { $size }
+files-run = Uruchom
+files-delete = Usuń
+files-delete-ask = Usunąć z karty?
+files-delete-yes = Tak, usuń
+files-delete-no = Nie
+files-name = Nazwa na karcie
+    .title = Nazwa pliku na karcie (np. /sd/zadanie.gcode); plik z dysku trafia do tego samego katalogu
+files-upload-project = Wyślij projekt
+files-upload-file = Wyślij plik z dysku…
+files-refresh = Odśwież
+files-sent = Wysłano { $name } ({ $size }).
+files-started = Uruchomiono { $name }.
+files-deleted = Usunięto { $name }.

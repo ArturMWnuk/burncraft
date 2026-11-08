@@ -380,10 +380,25 @@ fn machine_console(s: &mut Session, p: Value) -> Result<Value, CmdError> {
     ok(json!({ "lines": v }))
 }
 
+/// Lista plików w pamięci sterownika (REQ-13-014, okno REQ-03-042). Urządzenie bez
+/// pamięci plików (K40, Moshi, GRBL bez karty SD) daje `supported: false` z powodem,
+/// a nie błąd — okno pokazuje komunikat.
 fn machine_files(s: &mut Session, p: Value) -> Result<Value, CmdError> {
     let p: DevParam = parse(p)?;
-    let v = with(s, &p.device, |d| d.list_files())?;
-    ok(json!({ "files": v }))
+    let r = with(s, &p.device, |d| match d.list_files() {
+        Ok(v) => Ok(Ok(v)),
+        Err(DriverError::Unsupported(m)) => Ok(Err(m)),
+        Err(e) => Err(e),
+    })?;
+    match r {
+        Ok(v) => {
+            let total: u64 = v.iter().map(|f| f.size).sum();
+            ok(json!({ "supported": true, "files": v, "total_bytes": total }))
+        }
+        Err(reason) => ok(json!({
+            "supported": false, "files": [], "total_bytes": 0, "reason": reason
+        })),
+    }
 }
 
 // ---------- ruch ----------
@@ -730,28 +745,67 @@ fn device_raw(s: &mut Session, p: Value) -> Result<Value, CmdError> {
 struct SdUploadParams {
     /// Nazwa pliku na karcie (np. /sd/zadanie.gcode).
     name: String,
+    /// Tylko zaznaczone obiekty (wysyłka projektu).
     #[serde(default)]
     selection_only: bool,
+    /// Treść pliku z dysku (G-code) — wysyłana bez kompilacji; bez pola wysyłany jest
+    /// projekt skompilowany przez sterownik urządzenia.
+    #[serde(default)]
+    text: Option<String>,
+    #[serde(default)]
+    device: Option<String>,
+}
+
+/// Największy plik wysyłany z dysku przez `device.sd_upload {text}`.
+const MAX_UPLOAD_TEXT: usize = 16 * 1024 * 1024;
+
+#[derive(Deserialize, JsonSchema)]
+#[serde(deny_unknown_fields)]
+struct SdFileParams {
+    /// Nazwa pliku na karcie (np. /sd/zadanie.gcode).
+    name: String,
     #[serde(default)]
     device: Option<String>,
 }
 
 fn device_sd_upload(s: &mut Session, p: Value) -> Result<Value, CmdError> {
     let p: SdUploadParams = parse(p)?;
-    let f = compile_for(s, &p.device, p.selection_only, Source::Document)?;
-    let n = f.bytes.len();
-    with(s, &p.device, |d| d.upload_file(&p.name, &f.bytes))?;
-    ok(json!({ "name": p.name, "bytes": n }))
+    bc_drivers::driver::check_file_name(&p.name)
+        .map_err(|e| CmdError::new("invalid_params", e.to_string()))?;
+    let (bytes, source) = match p.text {
+        Some(t) => {
+            if t.is_empty() {
+                return Err(CmdError::new("invalid_params", "text: pusty plik"));
+            }
+            if t.len() > MAX_UPLOAD_TEXT {
+                return Err(CmdError::new(
+                    "invalid_params",
+                    format!(
+                        "text: plik większy niż {} MB",
+                        MAX_UPLOAD_TEXT / (1024 * 1024)
+                    ),
+                ));
+            }
+            (t.into_bytes(), "text")
+        }
+        None => (
+            compile_for(s, &p.device, p.selection_only, Source::Document)?.bytes,
+            "document",
+        ),
+    };
+    let n = bytes.len();
+    with(s, &p.device, |d| d.upload_file(&p.name, &bytes))?;
+    ok(json!({ "name": p.name, "bytes": n, "source": source }))
 }
 
 fn device_sd_run(s: &mut Session, p: Value) -> Result<Value, CmdError> {
-    let p: SdUploadParams = parse(p)?;
+    let p: SdFileParams = parse(p)?;
     with(s, &p.device, |d| d.run_file(&p.name))?;
     done()
 }
 
 fn device_sd_delete(s: &mut Session, p: Value) -> Result<Value, CmdError> {
-    let p: SdUploadParams = parse(p)?;
+    let p: SdFileParams = parse(p)?;
     with(s, &p.device, |d| d.delete_file(&p.name))?;
     done()
 }
@@ -1350,12 +1404,12 @@ pub(crate) fn register_all(r: &mut Registry) {
     reg(
         r,
         "machine.files",
-        "Pliki na karcie SD",
-        "Lista plików na karcie SD sterownika (FluidNC).",
+        "Pliki na sterowniku",
+        "Lista plików w pamięci sterownika (karta SD FluidNC) z rozmiarem i sumą; urządzenie bez pamięci plików (K40, Moshi, GRBL bez karty) daje supported: false z powodem.",
         Read,
         true,
         dev(),
-        &["REQ-10-018"],
+        &["REQ-10-018", "REQ-13-014", "REQ-03-042"],
         machine_files,
     );
     reg(
@@ -1497,11 +1551,11 @@ pub(crate) fn register_all(r: &mut Registry) {
         r,
         "device.sd_upload",
         "Zapisz na kartę SD",
-        "Kompiluje zadanie i zapisuje plik na karcie SD sterownika (FluidNC, XMODEM).",
+        "Zapisuje plik na karcie SD sterownika (FluidNC, XMODEM): projekt skompilowany przez sterownik urządzenia albo treść pliku z dysku (text).",
         Config,
         true,
         schema_of::<SdUploadParams>(),
-        &["REQ-10-018"],
+        &["REQ-10-018", "REQ-13-014", "REQ-03-042"],
         device_sd_upload,
     );
     reg(
@@ -1511,8 +1565,8 @@ pub(crate) fn register_all(r: &mut Registry) {
         "Uruchamia plik z karty SD sterownika.",
         Fire,
         true,
-        schema_of::<SdUploadParams>(),
-        &["REQ-10-018"],
+        schema_of::<SdFileParams>(),
+        &["REQ-10-018", "REQ-13-014", "REQ-03-042"],
         device_sd_run,
     );
     reg(
@@ -1522,8 +1576,8 @@ pub(crate) fn register_all(r: &mut Registry) {
         "Usuwa plik z karty SD sterownika.",
         Config,
         true,
-        schema_of::<SdUploadParams>(),
-        &["REQ-10-018"],
+        schema_of::<SdFileParams>(),
+        &["REQ-10-018", "REQ-13-014", "REQ-03-042"],
         device_sd_delete,
     );
     reg(r, "job.start", "Start zadania", "Planuje, kompiluje (sterownik urządzenia) i wysyła zadanie z dokumentu albo wczytany program G-code; repeat i delay_s — powtórzenia, queue — kolejka zadań.", Fire, true, schema_of::<StartParams>(), &["REQ-13-010", "REQ-10-001", "REQ-10-002", "REQ-10-003", "REQ-10-004", "REQ-10-020", "REQ-10-021", "REQ-02-089"], job_start);

@@ -1,11 +1,13 @@
 // Zrzuty ekranu do procedur ręcznych M3 (docs/procedures/M3-gui-checks.md): kreator USB,
-// przewodnik sterownika, K40 bez PWM (pole mocy nieaktywne, REQ-13-045) i płyta K40. Uruchamiane tylko na żądanie: BC_SCREENSHOTS=1 npx playwright test procedures-m3
+// przewodnik sterownika, K40 bez PWM (pole mocy nieaktywne, REQ-13-045), płyta K40 i okno
+// Lista plików na sterowniku (REQ-03-042, emulator FluidNC jako urządzenie). Uruchamiane tylko na żądanie: BC_SCREENSHOTS=1 npx playwright test procedures-m3
 // Urządzenia: fikcyjne USB (BURNCRAFT_FAKE_USB=1 w konfiguracji Playwright).
 
 import { expect, Page, test } from "@playwright/test";
 import { bc, resetDocument } from "./helpers";
 
 declare const process: { env: Record<string, string | undefined> };
+declare const Buffer: { from(data: string): any };
 
 const OUT = "../docs/procedures/img/m3";
 
@@ -88,4 +90,59 @@ test("screens_m3_k40_no_pwm_power_field", async ({ page }) => {
   await page.waitForTimeout(200);
   await page.getByTestId("panel-layers").screenshot({ path: `${OUT}/k40-layers-grbl-pwm.png` });
   await k40Cleanup(page);
+});
+
+test("screens_m3_driver_files_window", async ({ page }) => {
+  await k40Cleanup(page);
+  await bc(page, async (b) => {
+    await b.rpc.execute("machine.profile_save", {
+      profile: { name: "FluidNC (emulator)", driver: "grbl", transport: { kind: "emulator", variant: "fluidnc" }, workspace: [400, 300] },
+    });
+    await b.rpc.execute("shape.rect", { x: 20, y: 20, w: 40, h: 25, layer: 0 });
+    await b.rpc.execute("layer.set", { index: 0, speed: 100, power_max: 40, air_assist: false });
+    await b.refresh();
+    await b.machine.reload();
+  });
+  const box = page.locator(".dialog.driver-files");
+  for (const l of ["pl", "en"]) {
+    await lang(page, l);
+    const sfx = l === "pl" ? "" : "-en";
+    await page.getByTestId("laser-device").selectOption("FluidNC (emulator)");
+    await page.getByTestId("laser-connect").click();
+    await expect(page.getByTestId("laser-state")).toHaveAttribute("data-state", "idle", { timeout: 15_000 });
+    await page.getByTestId("laser-files").click();
+    await expect(page.getByTestId("files-empty")).toBeVisible();
+    await page.waitForTimeout(200);
+    await box.screenshot({ path: `${OUT}/files-empty${sfx}.png` });
+    await page.getByTestId("files-name").fill("/sd/prostokat.gcode");
+    await page.getByTestId("files-upload-project").click();
+    await expect(page.locator("[data-testid^='files-row-']")).toHaveCount(1);
+    await page.getByTestId("files-file-input").setInputFiles({ name: "test-ramki.gcode", mimeType: "text/plain", buffer: Buffer.from("G21 G90\nG0 X5 Y5\nG1 X25 F600 S300 M3\nM5\n") });
+    await expect(page.locator("[data-testid^='files-row-']")).toHaveCount(2);
+    await page.waitForTimeout(200);
+    await box.screenshot({ path: `${OUT}/files-list${sfx}.png` });
+    await page.getByTestId("files-delete-1").click();
+    await expect(page.getByTestId("files-delete-confirm-1")).toBeVisible();
+    await page.waitForTimeout(200);
+    await box.screenshot({ path: `${OUT}/files-delete-confirm${sfx}.png` });
+    await page.getByTestId("files-delete-cancel-1").click();
+    await page.getByTestId("files-close").click();
+    if (l === "pl") await page.getByTestId("panel-laser").screenshot({ path: `${OUT}/files-laser-button.png` });
+    await k40Cleanup(page);
+  }
+  // K40: brak pamięci plików
+  await lang(page, "pl");
+  await page.getByTestId("laser-device").selectOption("Symulator K40 (Lihuiyu)");
+  await page.getByTestId("laser-connect").click();
+  await expect(page.getByTestId("laser-state")).toHaveAttribute("data-state", "idle", { timeout: 15_000 });
+  await page.getByTestId("laser-files").click();
+  await expect(page.getByTestId("files-unsupported")).toBeVisible();
+  await page.waitForTimeout(200);
+  await box.screenshot({ path: `${OUT}/files-k40-unsupported.png` });
+  await page.getByTestId("files-close").click();
+  await k40Cleanup(page);
+  await bc(page, async (b) => {
+    await b.rpc.execute("machine.profile_delete", { name: "FluidNC (emulator)" });
+    await b.machine.reload();
+  });
 });

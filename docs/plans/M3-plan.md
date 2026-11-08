@@ -32,6 +32,12 @@ Każde nowe sterowanie w GUI to polecenie rejestru (REQ-01-029, `executor`). Ste
 
 ## Stan przyrostów
 
+- **M3.4 — część programowa zakończona 2026-11-08; test sprzętowy K40 czeka na zleceniodawcę.** REQ-03-042 i REQ-13-014 `verified`. REQ-19-016, REQ-13-030, 040, 049 są `in_progress` do wyników checklisty `docs/procedures/M3-hardware-k40.md`. Odstępstw nie ma. Para commitów red/green:
+  - API plików sterownika (`Driver::list_files`/`upload_file`/`run_file`/`delete_file`, z M2 dla karty SD FluidNC): lista posortowana po nazwie, walidacja nazwy pliku (`driver::check_file_name`: niepusta, do 255 znaków, bez znaków sterujących — koniec wiersza nie dopisze drugiego polecenia do `$SD/Run=`); GRBL bez karty, Lihuiyu i Moshi — `Unsupported`;
+  - polecenia: `machine.files` z `supported`, `total_bytes` i `reason` (urządzenie bez pamięci plików bez błędu), `device.sd_upload {text}` (plik z dysku bez kompilacji, do 16 MB, pole `source`), osobne parametry `device.sd_run`/`sd_delete`; okno `files.open`/`files.close`;
+  - GUI: okno „Lista plików na sterowniku” (`web/src/files.ts`, przycisk „Pliki na sterowniku” w oknie Laser): lista z rozmiarem i sumą, uruchom, usuń z potwierdzeniem, wyślij projekt albo plik z dysku, komunikat dla K40/Moshi; pl/en; procedura REQ-03-042 w `docs/procedures/M3-gui-checks.md`;
+  - checklista testu K40 M2 Nano (część A: oryginalny sterownik CH341DLL, część B: WinUSB) z odwzorowaniem listy `UNVERIFIED` z ADR 0014 na punkty.
+
 - **M3.3 — zakończony 2026-11-08** (emulatory). 20 wymagań `verified`. REQ-13-030 (M2 Nano), REQ-13-040 (CH341DLL) i REQ-13-049 („od pudełka”) są `in_progress` do testu sprzętowego K40 w M3.4. Odstępstw nie ma. ADR 0014. Para commitów red/green:
   - `bc_drivers::ch341`: trait `Ch341` (dane i adres EPP, stan) — natywnie przez USB z M3.1 (`Ch341Usb`, żądania sterujące w `UsbBulk`), CH341DLL ładowana w czasie działania (`Ch341Dll`, transport `ch341_dll`), emulator za interfejsem USB (`EmuUsb`);
   - `bc_drivers::lihuiyu`: protokół EGV (pakiety 30 B + CRC-8, stany, kierunki, odległości, kody prędkości dla 10 wariantów płyt, raster natywny `G`), sterownik `LihuiyuDriver` (bazowanie, przejazd szybki/powolny, pauza, stop, potwierdzenie ID płyty MD5), kompilator `lihuiyu` (`.egv`, dither bez PWM), emulator z buforem i torem → PNG;

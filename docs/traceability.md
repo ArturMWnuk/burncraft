@@ -218,7 +218,7 @@
 | REQ-03-039 | M2 | verified | `crates/bc-commands/tests/m25_commands.rs::req_03_039_saved_named_positions`<br>`web/e2e/machine.spec.ts::req_03_039_move_window_saved_positions` | docs/procedures/M2-gui-checks.md |
 | REQ-03-040 | M2 | verified | `web/e2e/machine.spec.ts::req_03_040_console_syntax_highlight_and_history`<br>`web/e2e/machine.spec.ts::req_03_040_console_keeps_focus_when_window_rerenders` | docs/procedures/M2-gui-checks.md |
 | REQ-03-041 | M2 | verified | `web/e2e/machine.spec.ts::req_03_041_macros_window` | docs/procedures/M2-gui-checks.md |
-| REQ-03-042 | M3 | todo |  |  |
+| REQ-03-042 | M3 | verified | `crates/bc-commands/tests/m34_commands.rs::req_03_042_files_window_commands`<br>`web/e2e/files.spec.ts::req_03_042_driver_files_window_list_upload_run_delete`<br>`web/e2e/files.spec.ts::req_03_042_driver_files_window_unsupported_and_english` | docs/procedures/M3-gui-checks.md |
 | REQ-03-043 | M4 | todo |  |  |
 | REQ-03-044 | M4 | todo |  |  |
 | REQ-03-045 | M5 | todo |  |  |
@@ -718,7 +718,7 @@
 | REQ-13-011 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_011_012_pause_resume_stop_commands`<br>`crates/bc-drivers/tests/driver_grbl.rs::req_13_011_012_pause_resume_stop` |  |
 | REQ-13-012 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_011_012_pause_resume_stop_commands`<br>`crates/bc-drivers/tests/driver_grbl.rs::req_13_011_012_pause_resume_stop` |  |
 | REQ-13-013 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_198_013_084_settings_commands_with_backup`<br>`crates/bc-drivers/tests/driver_grbl.rs::req_13_013_082_198_settings_backup_diff_validation` |  |
-| REQ-13-014 | M3 | todo |  |  |
+| REQ-13-014 | M3 | verified | `crates/bc-commands/tests/m34_commands.rs::req_13_014_files_commands_on_fluidnc_emulator`<br>`crates/bc-commands/tests/m34_commands.rs::req_13_014_files_unsupported_on_k40_and_moshi`<br>`crates/bc-drivers/tests/driver_files.rs::req_13_014_fluidnc_list_upload_run_delete`<br>`crates/bc-drivers/tests/driver_files.rs::req_13_014_invalid_file_names_never_sent`<br>`crates/bc-drivers/tests/driver_files.rs::req_13_014_unsupported_without_file_storage` |  |
 | REQ-13-015 | M2 | verified | `crates/bc-commands/tests/gcode_commands.rs::req_13_015_compile_command_reports_and_ticks`<br>`crates/bc-drivers/tests/compile.rs::req_13_015_compile_job_offline_export` |  |
 | REQ-13-016 | M2 | verified | `crates/bc-drivers/tests/compile.rs::req_13_016_compiler_independent_of_transport` |  |
 | REQ-13-017 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_191_017_simulator_device` |  |
@@ -734,7 +734,7 @@
 | REQ-13-027 | M6 | todo |  |  |
 | REQ-13-028 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_196_028_profiles_and_multiple_devices` |  |
 | REQ-13-029 | M2 | verified | `crates/bc-cli/tests/device_cli.rs::req_13_029_cli_device_option_and_network_emulator` |  |
-| REQ-13-030 | M3 | in_progress |  |  |
+| REQ-13-030 | M3 | in_progress |  | docs/procedures/M3-hardware-k40.md |
 | REQ-13-031 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_031_board_m3_nano` |  |
 | REQ-13-032 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_032_board_m1` |  |
 | REQ-13-033 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_033_board_m` |  |
@@ -744,7 +744,7 @@
 | REQ-13-037 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_037_board_a` |  |
 | REQ-13-038 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_038_board_6c6879_laser_m2_m3` |  |
 | REQ-13-039 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_039_ch341_native_usb`<br>`web/e2e/k40.spec.ts::req_13_039_add_k40_from_usb_finder` |  |
-| REQ-13-040 | M3 | in_progress | `crates/bc-drivers/tests/k40.rs::req_13_040_ch341_dll_runtime_loading` |  |
+| REQ-13-040 | M3 | in_progress | `crates/bc-drivers/tests/k40.rs::req_13_040_ch341_dll_runtime_loading` | docs/procedures/M3-hardware-k40.md |
 | REQ-13-041 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_041_egv_packets_30_bytes_crc8` |  |
 | REQ-13-042 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_042_status_ok_busy_crc_task_complete` |  |
 | REQ-13-043 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_043_speed_code_known_value_m2`<br>`crates/bc-drivers/tests/k40.rs::req_13_043_direction_step_commands` |  |
@@ -753,7 +753,7 @@
 | REQ-13-046 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_046_047_k40_profile_board_compile_and_job`<br>`crates/bc-drivers/tests/k40.rs::req_13_046_board_variant_and_id`<br>`web/e2e/k40.spec.ts::req_13_046_047_k40_board_variant_id_and_scale` |  |
 | REQ-13-047 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_046_047_k40_profile_board_compile_and_job`<br>`crates/bc-drivers/tests/k40.rs::req_13_047_steps_per_mm_and_scale`<br>`web/e2e/k40.spec.ts::req_13_046_047_k40_board_variant_id_and_scale` |  |
 | REQ-13-048 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_048_home_rapid_slow_pause_resume` |  |
-| REQ-13-049 | M3 | in_progress |  |  |
+| REQ-13-049 | M3 | in_progress |  | docs/procedures/M3-hardware-k40.md |
 | REQ-13-050 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_050_053_to_070_grbl_variants` |  |
 | REQ-13-051 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_051_moshi_ms10105_over_ch341` |  |
 | REQ-13-052 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_052_moshi_job_via_registry`<br>`crates/bc-drivers/tests/k40.rs::req_13_052_moshi_protocol_job_in_blocks` |  |
@@ -1098,7 +1098,7 @@
 | REQ-19-013 | M1 | verified | `web/e2e/app.spec.ts::req_01_022_and_req_03_001_002_003_017_and_req_19_013_webgl2_workspace` |  |
 | REQ-19-014 | M6 | todo |  |  |
 | REQ-19-015 | M6 | todo |  |  |
-| REQ-19-016 | M3 | todo | `crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic` |  |
+| REQ-19-016 | M3 | in_progress | `crates/bc-drivers/tests/golden.rs::req_19_006_016_007_golden_deterministic` | docs/procedures/M3-hardware-k40.md |
 | REQ-19-017 | M2 | verified |  | docs/procedures/M2-hardware-grbl.md |
 | REQ-19-018 | M7 | deviation |  |  |
 | REQ-19-019 | M5 | todo |  |  |

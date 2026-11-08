@@ -531,3 +531,27 @@ k40-scale-y = Scale correction Y
 k40-fixed = Simulated device: board settings are fixed.
 usb-add-k40 = Add K40 (Lihuiyu)
 usb-add-moshi = Add Moshi
+
+# Controller files window (M3.4, REQ-03-042)
+laser-files = Controller files
+files-title = Files on the controller
+files-device = Device: { $device }
+files-no-device = Connect a device to see the files in its memory.
+files-unsupported = The device { $device } has no file storage. Send jobs with the Start button in the Laser window.
+files-empty = No files on the card.
+files-col-name = File
+files-col-size = Size
+files-total = Files: { $count }, total { $size }
+files-run = Run
+files-delete = Delete
+files-delete-ask = Delete from the card?
+files-delete-yes = Yes, delete
+files-delete-no = No
+files-name = Name on the card
+    .title = File name on the card (e.g. /sd/job.gcode); a file from disk goes to the same folder
+files-upload-project = Send project
+files-upload-file = Send file from disk…
+files-refresh = Refresh
+files-sent = Sent { $name } ({ $size }).
+files-started = Started { $name }.
+files-deleted = Deleted { $name }.

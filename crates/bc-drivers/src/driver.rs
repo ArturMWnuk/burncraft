@@ -261,6 +261,29 @@ pub struct RemoteFile {
     pub size: u64,
 }
 
+/// Najdłuższa nazwa pliku w pamięci sterownika (ścieżka z katalogiem).
+pub const MAX_FILE_NAME: usize = 255;
+
+/// Nazwa pliku w pamięci sterownika (REQ-13-014): niepusta, do [`MAX_FILE_NAME`] znaków,
+/// bez znaków sterujących — koniec wiersza w nazwie dopisałby do `$SD/Run=` drugie
+/// polecenie sterownika.
+pub fn check_file_name(name: &str) -> Result<(), DriverError> {
+    if name.trim().is_empty() {
+        return Err(DriverError::Invalid("pusta nazwa pliku".into()));
+    }
+    if name.chars().count() > MAX_FILE_NAME {
+        return Err(DriverError::Invalid(format!(
+            "nazwa pliku dłuższa niż {MAX_FILE_NAME} znaków"
+        )));
+    }
+    if name.chars().any(char::is_control) {
+        return Err(DriverError::Invalid(
+            "nazwa pliku ze znakiem sterującym (np. końcem wiersza)".into(),
+        ));
+    }
+    Ok(())
+}
+
 /// Błąd sterownika.
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
 pub enum DriverError {

@@ -1345,17 +1345,24 @@ impl Driver for GrblDriver {
             )));
         }
         let lines = self.cmd("$SD/List")?;
-        Ok(lines
+        // UNVERIFIED: FluidNC — format wiersza [FILE:<ścieżka>|SIZE:<bajty>] (wiki FluidNC „SD Card”)
+        let mut files: Vec<RemoteFile> = lines
             .iter()
-            .filter_map(|l| l.strip_prefix("[FILE:").and_then(|r| r.strip_suffix(']')))
+            .filter_map(|l| {
+                l.trim()
+                    .strip_prefix("[FILE:")
+                    .and_then(|r| r.strip_suffix(']'))
+            })
             .map(|r| {
                 let (n, s) = r.split_once("|SIZE:").unwrap_or((r, "0"));
                 RemoteFile {
                     name: n.to_string(),
-                    size: s.parse().unwrap_or(0),
+                    size: s.trim().parse().unwrap_or(0),
                 }
             })
-            .collect())
+            .collect();
+        files.sort_by(|a, b| a.name.cmp(&b.name));
+        Ok(files)
     }
 
     fn upload_file(&mut self, name: &str, data: &[u8]) -> Result<(), DriverError> {
@@ -1365,6 +1372,7 @@ impl Driver for GrblDriver {
                 self.variant.name
             )));
         }
+        check_file_name(name)?;
         self.alive()?;
         let (r, w) = mpsc::channel();
         self.tx
@@ -1377,16 +1385,24 @@ impl Driver for GrblDriver {
 
     fn run_file(&mut self, name: &str) -> Result<(), DriverError> {
         if !self.variant.sd {
-            return Err(DriverError::Unsupported("brak karty SD".into()));
+            return Err(DriverError::Unsupported(format!(
+                "{}: brak karty SD",
+                self.variant.name
+            )));
         }
+        check_file_name(name)?;
         self.not_alarm()?;
         self.cmd(&format!("$SD/Run={name}")).map(|_| ())
     }
 
     fn delete_file(&mut self, name: &str) -> Result<(), DriverError> {
         if !self.variant.sd {
-            return Err(DriverError::Unsupported("brak karty SD".into()));
+            return Err(DriverError::Unsupported(format!(
+                "{}: brak karty SD",
+                self.variant.name
+            )));
         }
+        check_file_name(name)?;
         self.cmd(&format!("$SD/Delete={name}")).map(|_| ())
     }
 

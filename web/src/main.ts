@@ -16,6 +16,7 @@ import { EraserTool, Host2, LassoTool, TrimTool, TwoPointTool, WarpTool } from "
 import { Renderer, setCanvasTheme, THEME } from "./renderer";
 import { Preview, PreviewHost } from "./preview";
 import { LayerSettings } from "./layersettings";
+import { DriverFiles, FilesHost } from "./files";
 import { Rpc, RpcError } from "./rpc";
 import { drawRulers } from "./rulers";
 import { Scene, selectionBox } from "./scene";
@@ -61,7 +62,7 @@ const SNAP_LABELS: (keyof SnapSettings)[] = ["grid", "nodes", "mids", "centers",
 /** Narzędzia ukryte w trybie początkującego (REQ-03-051). */
 const ADVANCED_TOOLS = new Set(["node", "trim", "eraser", "warp", "rotate2", "scale2"]);
 
-class App implements ToolHost, NodeHost, Host2, DialogHost, ToolbarHost, MachineHost, PreviewHost {
+class App implements ToolHost, NodeHost, Host2, DialogHost, ToolbarHost, MachineHost, PreviewHost, FilesHost {
   rpc = Rpc.fromPage();
   view = new View();
   scene: Scene | null = null;
@@ -82,6 +83,8 @@ class App implements ToolHost, NodeHost, Host2, DialogHost, ToolbarHost, Machine
   /** Okno Podgląd (REQ-03-046). */
   preview = new Preview(this);
   layerSettings = new LayerSettings(this);
+  /** Okno Lista plików na sterowniku (REQ-03-042). */
+  files = new DriverFiles(this);
   /** Obrysy kerfu w edytorze (REQ-07-029). */
   kerf: { layer: number; object: number; closed: boolean; points: [number, number][] }[] = [];
   private kerfFlat: { points: number[]; closed: boolean }[] = [];
@@ -211,6 +214,15 @@ class App implements ToolHost, NodeHost, Host2, DialogHost, ToolbarHost, Machine
     return out;
   }
 
+  /** Wybrane urządzenie (okno plików na sterowniku). */
+  get deviceName(): string | null {
+    return this.machine.device;
+  }
+
+  async afterRun() {
+    await this.machine.poll();
+  }
+
   async startFrom(segment: number) {
     await this.machine.startFrom(segment);
   }
@@ -285,6 +297,7 @@ class App implements ToolHost, NodeHost, Host2, DialogHost, ToolbarHost, Machine
     this.panels.retranslate();
     this.machine.setColors(this.prefs.startColor, this.prefs.stopColor);
     this.machine.retranslate();
+    this.files.retranslate();
     this.buildToolbar();
     if (this.scene) {
       this.panels.update(this.scene);
@@ -429,6 +442,8 @@ class App implements ToolHost, NodeHost, Host2, DialogHost, ToolbarHost, Machine
     "preview.close": () => this.preview.close(),
     "layer.settings_open": (p) => this.layerSettings.open(p),
     "layer.settings_close": () => this.layerSettings.close(),
+    "files.open": () => this.files.open(),
+    "files.close": () => this.files.close(),
     "preview.set": (p) => this.preview.set(p),
     "jog.settings": (p) => this.machine.setJog(p),
     "dialog.open": (p) => {

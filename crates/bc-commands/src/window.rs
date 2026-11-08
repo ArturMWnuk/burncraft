@@ -469,6 +469,20 @@ pub(crate) fn register_all(r: &mut Registry) {
         "Zamyka okno ustawień warstwy.",
         &["REQ-01-029", "REQ-03-032"],
     );
+    add_req::<NoParams, Empty>(
+        r,
+        "files.open",
+        "Pliki na sterowniku",
+        "Otwiera okno Lista plików na sterowniku (§3): lista plików w pamięci wybranego urządzenia (machine.files), uruchom (device.sd_run), usuń (device.sd_delete), wyślij projekt albo plik z dysku (device.sd_upload).",
+        &["REQ-01-029", "REQ-03-042"],
+    );
+    add_req::<NoParams, Empty>(
+        r,
+        "files.close",
+        "Zamknij pliki na sterowniku",
+        "Zamyka okno Lista plików na sterowniku.",
+        &["REQ-01-029", "REQ-03-042"],
+    );
     add::<DialogParams, Empty>(
         r,
         "dialog.open",

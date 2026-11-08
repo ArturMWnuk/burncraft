@@ -6,9 +6,9 @@ Stan na M2.5 (2026-11-07): sterownik GRBL (serial, TCP, WebSocket) z odmianami d
 
 | Rodzina | Modele (wymagania) | Etap | Poziom | Uwagi |
 |---|---|---|---|---|
-| Lihuiyu (K40) | M2 Nano, M3 Nano, M1, M, B1, B2, B, A, 6C6879 (REQ-13-030…049) | M3 | — | priorytet: M2 Nano „od pudełka” |
-| Moshi | MS10105 V4.x (REQ-13-051, 052) | M3 | — | |
-| GRBL i pochodne | 0.9, 1.1, grblHAL, FluidNC, LPC, ESP32, M3 + producenci (REQ-13-050, 053…091) | M2 | emulator | M2.2: eksport G-code; M2.3: połączenie, strumieniowanie, jog, ramki, ustawienia, sonda, karta SD (FluidNC) na emulatorze i grbl-sim; szczegóły producentów UNVERIFIED |
+| Lihuiyu (K40) | M2 Nano, M3 Nano, M1, M, B1, B2, B, A, 6C6879 (REQ-13-030…049) | M3 | emulator | M3.3: sterownik, kompilator EGV i emulator płyty (ADR 0014), USB natywnie (WinUSB) i przez CH341DLL; test sprzętowy K40 M2 Nano zleceniodawcy — checklista `docs/procedures/M3-hardware-k40.md` (czeka na wyniki) |
+| Moshi | MS10105 V4.x (REQ-13-051, 052) | M3 | emulator | M3.3: sterownik z wysyłką blokami i emulator; bez sprzętu do testu |
+| GRBL i pochodne | 0.9, 1.1, grblHAL, FluidNC, LPC, ESP32, M3 + producenci (REQ-13-050, 053…091) | M2 | emulator | M2.2: eksport G-code; M2.3: połączenie, strumieniowanie, jog, ramki, ustawienia, sonda, karta SD (FluidNC) na emulatorze i grbl-sim; M3.4: okno „Lista plików na sterowniku” (karta SD FluidNC) na emulatorze; szczegóły producentów UNVERIFIED |
 | Smoothieware, Marlin, RRF/Duet, CNC ogólny | (REQ-13-092…108) | M2/M6 | emulator (CNC ogólny: eksport) | M2.2: sterownik `gcode` (Mach3/Mach4, UCCNC, Masso, LinuxCNC) — szablony, G20/G21, makra; Smoothie/Marlin/RRF od M3/M6 |
 | xTool | D1…F2, Wi-Fi HTTP (REQ-13-109…118) | M6 | — | |
 | Ruida | RDC6442G…Hydra/GT5, Thunder, Omtech (REQ-13-119…146, 184, 186) | — | **nieobsługiwane** | wyłączone z projektu decyzją zleceniodawcy 2026-11-07 (DEV-007) |

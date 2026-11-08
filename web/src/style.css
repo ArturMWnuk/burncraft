@@ -321,3 +321,19 @@ ol.history li.redo { color: var(--muted); font-style: italic; }
 .dialog.usb-guide { width: min(560px, 94vw); }
 .usb-guide ol { margin: 6px 0; padding-left: 22px; }
 .usb-guide li { margin: 6px 0; line-height: 1.4; }
+
+/* Okno Lista plików na sterowniku (REQ-03-042) */
+.dialog.driver-files { width: min(640px, 94vw); }
+.dialog.driver-files:focus { outline: none; }
+.dialog.driver-files .hidden-file { display: none; }
+.dialog.driver-files td.num, .dialog.driver-files th.num { text-align: right; white-space: nowrap; }
+.dialog.driver-files .files-file { font-family: ui-monospace, Consolas, monospace; word-break: break-all; }
+.dialog.driver-files td.files-actions { width: 270px; }
+.dialog.driver-files .files-acts { display: flex; gap: 6px; justify-content: flex-end; align-items: center; white-space: nowrap; }
+.dialog.driver-files .files-upload { display: flex; flex-direction: column; gap: 6px; border-top: 1px solid var(--border); padding-top: 8px; }
+.dialog.driver-files .files-upload .row { justify-content: flex-start; }
+.dialog.driver-files .files-upload input[type="text"] { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; padding: 3px 6px; font-family: ui-monospace, Consolas, monospace; }
+.dialog.driver-files .field.wide { display: flex; gap: 8px; align-items: center; }
+.dialog.driver-files .note { border-left: 3px solid var(--muted); padding-left: 6px; margin: 0; }
+.dialog.driver-files .error:empty, .dialog.driver-files .files-status:empty { display: none; }
+.dialog.driver-files .error { color: var(--error); margin: 0; }

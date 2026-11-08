@@ -89,3 +89,35 @@ Wynik (2026-11-08): **zgodne**.
   - zachowanie GUI: test E2E `req_13_045_no_pwm_power_field_disabled_with_message`.
 
 Do sprawdzenia na sprzęcie (test K40, M3.4): nie dotyczy GUI. Faktyczna moc z pokrętła i wygląd ditheru na materiale należą do checklisty K40.
+
+## REQ-03-042 — okno „Lista plików na sterowniku”
+
+Procedura: profil urządzenia „FluidNC (emulator)” (sterownik GRBL, transport emulator, odmiana `fluidnc` z kartą SD i XMODEM) i prostokąt 40 × 25 mm na C00. Kroki:
+- okno Laser → „Połącz” (`machine.connect`), potem „Pliki na sterowniku” (`files.open`);
+- „Wyślij projekt” z nazwą `/sd/prostokat.gcode` (`device.sd_upload`, G-code skompilowany dla urządzenia);
+- „Wyślij plik z dysku…” z plikiem `test-ramki.gcode` (`device.sd_upload {text}`; plik trafia do katalogu z pola nazwy);
+- „Usuń” przy drugim pliku (`device.sd_delete` po potwierdzeniu), potem „Nie”;
+- to samo po angielsku; na koniec okno z urządzeniem „Symulator K40 (Lihuiyu)”.
+
+| Pusta karta (pl) | Lista plików (pl) | Potwierdzenie usunięcia (pl) |
+|---|---|---|
+| ![Pusta karta](img/m3/files-empty.png) | ![Lista plików](img/m3/files-list.png) | ![Potwierdzenie usunięcia](img/m3/files-delete-confirm.png) |
+
+| Empty card (en) | File list (en) | Delete confirmation (en) |
+|---|---|---|
+| ![Empty card](img/m3/files-empty-en.png) | ![File list](img/m3/files-list-en.png) | ![Delete confirmation](img/m3/files-delete-confirm-en.png) |
+
+| Przycisk w oknie Laser | K40: brak pamięci plików |
+|---|---|
+| ![Przycisk Pliki na sterowniku](img/m3/files-laser-button.png) | ![K40 bez plików](img/m3/files-k40-unsupported.png) |
+
+Wynik (2026-11-08): **zgodne**.
+- Okno pokazuje urządzenie, listę plików z rozmiarem (B, kB, MB; przecinek dziesiętny po polsku) i sumę („Plików: 2, razem 190 B”).
+- Każdy wiersz ma „Uruchom” (`device.sd_run`, wyróżniony kolorem Start) i „Usuń”. Usunięcie wymaga potwierdzenia w wierszu („Usunąć z karty?” — „Tak, usuń” w kolorze Stop, „Nie”). Szerokość kolumn nie zmienia się przy potwierdzeniu.
+- Pod listą jest pole „Nazwa na karcie” (domyślnie `/sd/zadanie.gcode`) i przyciski „Wyślij projekt” oraz „Wyślij plik z dysku…”. Wiersz stanu potwierdza wysłanie z nazwą i rozmiarem; błąd sterownika pojawia się w oknie na czerwono.
+- Przy urządzeniu bez pamięci plików (K40, Moshi, GRBL bez karty) okno pokazuje komunikat z nazwą urządzenia i wskazówką, że zadanie wysyła się przyciskiem Start. Nie ma listy ani przycisków wysyłki.
+- Każda kontrolka okna ma `data-command` (sprawdza test E2E `req_03_042_driver_files_window_list_upload_run_delete`). Esc i „Zamknij” zamykają okno (`files.close`). Tłumaczenie angielskie jest kompletne.
+
+Uwagi z przeglądu zrzutów (poprawione przed zatwierdzeniem): w pierwszej wersji kolumna akcji zmieniała szerokość przy potwierdzeniu usunięcia, a linia pod wierszem kończyła się przed przyciskami (komórka z `display: flex`).
+
+Do sprawdzenia na sprzęcie: format odpowiedzi `$SD/List` i polecenie `$Xmodem/Receive` prawdziwego FluidNC (`UNVERIFIED`). W teście K40 okno sprawdza tylko komunikat o braku pamięci plików (checklista K40, punkt A17); sterownika FluidNC z kartą SD nie testowano na sprzęcie.
