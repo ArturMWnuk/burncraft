@@ -317,6 +317,13 @@ impl Io {
         }
     }
 
+    /// Zadanie `id` oznaczone przez `send_job` i zatrzymane przez `stop()`, zanim wątek I/O
+    /// odebrał je z kanału.
+    fn stopped_before_start(&self, id: u64) -> bool {
+        let j = self.shared.job.lock().expect("zadanie");
+        j.id == id && j.status == JobStatus::Stopped
+    }
+
     fn start_job(&mut self, lines: Arc<Vec<String>>, opts: JobOptions, id: u64) {
         let mut j = self.shared.job.lock().expect("zadanie");
         *j = JobState {
@@ -669,6 +676,11 @@ impl Io {
                                 self.queue.push_back((l, o, id));
                                 self.shared.job.lock().expect("zadanie").queued = self.queue.len();
                             }
+                        } else if self.stopped_before_start(id) {
+                            // `stop()` przyszedł po `send_job`, zanim wątek odebrał zadanie:
+                            // reset już wysłany, zadanie nie startuje i zostaje zatrzymane
+                            self.shared
+                                .log(format!("! zadanie {id} zatrzymane przed startem"));
                         } else {
                             self.start_job(l, o, id);
                         }
