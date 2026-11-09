@@ -653,6 +653,55 @@ fn req_13_048_home_rapid_slow_pause_resume() {
     assert!(matches!(s, JobStatus::Stopped | JobStatus::Done), "{s:?}");
 }
 
+#[test]
+fn req_13_048_stop_interrupts_program_buffered_on_m2_nano() {
+    // test sprzętowy K40 (B4/A15, 2026-11-09): „Stop” nie zatrzymał prostokąta przy 5 mm/s —
+    // cały program był już w płycie, sterownik czekał na koniec zadania (FNSE-), zanim
+    // obsłużył Stop, a pakiet „I” M2 Nano wykonuje dopiero po następnym pakiecie
+    let e = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        speed: 1.0,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d = connect(&e, Board::M2);
+    // obwód 100 mm przy 5 mm/s: 20 s
+    let f = egv_file(&rect_doc(5.0, 100.0), Board::M2);
+    d.send_job(&f, JobOptions::default()).unwrap();
+    let t0 = std::time::Instant::now();
+    // przejazd do prostokąta wykonany, głowica tnie pierwszy bok
+    while e.lock().unwrap().trace.is_empty() {
+        assert!(t0.elapsed() < Duration::from_secs(10), "zadanie nie ruszyło");
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    std::thread::sleep(Duration::from_millis(300));
+    assert!(e.lock().unwrap().running());
+    d.stop();
+    let t0 = std::time::Instant::now();
+    while d.job().status != JobStatus::Stopped {
+        assert!(
+            t0.elapsed() < Duration::from_secs(1),
+            "Stop nie obsłużony: {:?}",
+            d.job().status
+        );
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    // płyta przerywa program i gasi wiązkę
+    let t0 = std::time::Instant::now();
+    while e.lock().unwrap().running() {
+        assert!(
+            t0.elapsed() < Duration::from_secs(1),
+            "płyta dalej wykonuje program po Stop"
+        );
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    assert!(!e.lock().unwrap().interp.laser);
+    assert!(burn_mm(&e.lock().unwrap().trace) < 20.0);
+    // po stopie bazowanie działa
+    d.home().unwrap();
+    assert_eq!(e.lock().unwrap().interp.homes, 1);
+}
+
 // ---------- REQ-13-039: CH341 natywnie przez USB ----------
 
 struct EmuOpener(Arc<dyn UsbBackend>);
