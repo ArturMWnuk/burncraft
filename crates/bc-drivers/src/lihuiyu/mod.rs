@@ -276,6 +276,11 @@ struct Io {
     job: Option<(Arc<Vec<Packet>>, usize, JobOptions, Instant)>,
     /// Płyta wstrzymana pakietem `PN`.
     board_paused: bool,
+    /// Ruchy wysłane, jeszcze niewykonane przez płytę (szacowanie pozycji głowicy w czasie),
+    /// czas w bieżącym ruchu i ostatnia aktualizacja.
+    plan: VecDeque<emu::EgvMove>,
+    plan_t: f64,
+    plan_at: Instant,
     /// Dane ostatniego potwierdzonego pakietu.
     last_sent: Option<[u8; egv::PAYLOAD]>,
 }
@@ -395,14 +400,67 @@ impl Io {
             return Err(DriverError::Timeout("brak potwierdzenia pakietu".into()));
         }
         self.last_sent = Some(p.data);
+        self.advance_estimate();
         self.track.feed(&p.data);
-        self.track.moves.clear();
-        *self.shared.pos.lock().expect("pozycja") = self.track.pos;
+        let moves: Vec<_> = self.track.moves.drain(..).collect();
+        self.plan.extend(moves);
         if p.wait_finish {
             self.push_through()?;
-            self.wait_finish()?;
+            if self.wait_finish()? {
+                // płyta skończyła program: głowica na końcu wysłanych ruchów
+                self.plan.clear();
+                self.plan_t = 0.0;
+                self.set_pos(self.track.pos);
+            }
         }
         Ok(())
+    }
+
+    fn set_pos(&self, p: (i64, i64)) {
+        *self.shared.pos.lock().expect("pozycja") = p;
+    }
+
+    /// Szacowana pozycja głowicy: ruchy wysłane do płyty odtwarzane w czasie wg prędkości
+    /// z programu (płyta wykonuje program po swojemu, sterownik nie zna jej pozycji). Test
+    /// sprzętowy K40 (2026-11-09): krzyżyk na kanwie skakał na koniec wysłanego programu.
+    /// UNVERIFIED: prędkość przejazdów szybkich płyty (`Interp::rapid_speed`).
+    fn advance_estimate(&mut self) {
+        let now = Instant::now();
+        let mut dt = (now - self.plan_at).as_secs_f64();
+        self.plan_at = now;
+        if self.board_paused {
+            return;
+        }
+        let mut pos = None;
+        while let Some(m) = self.plan.front().copied() {
+            let len = (((m.to.0 - m.from.0) as f64).powi(2) + ((m.to.1 - m.from.1) as f64).powi(2))
+                .sqrt()
+                * 25.4
+                / 1000.0;
+            let dur = len / m.speed.max(0.01);
+            if self.plan_t + dt >= dur {
+                dt -= dur - self.plan_t;
+                self.plan_t = 0.0;
+                self.plan.pop_front();
+                pos = Some(m.to);
+            } else {
+                self.plan_t += dt;
+                let f = if dur > 0.0 { self.plan_t / dur } else { 1.0 };
+                pos = Some((
+                    m.from.0 + ((m.to.0 - m.from.0) as f64 * f).round() as i64,
+                    m.from.1 + ((m.to.1 - m.from.1) as f64 * f).round() as i64,
+                ));
+                break;
+            }
+        }
+        if let Some(p) = pos {
+            self.set_pos(p);
+        }
+    }
+
+    /// Szacowana pozycja (kroki).
+    fn estimate(&self) -> (i64, i64) {
+        *self.shared.pos.lock().expect("pozycja")
     }
 
     /// Pakiet dopełnienia po ostatnim pakiecie polecenia: płyta M2 Nano wykonuje przyjęty
@@ -416,21 +474,22 @@ impl Io {
     }
 
     /// Czeka, aż płyta skończy (bit 0x02 stanu zgaszony: FINISH 236 / 204).
-    /// Źródło: MeerK40t `controller.py` (wait-finished).
-    fn wait_finish(&mut self) -> Result<(), DriverError> {
+    /// Źródło: MeerK40t `controller.py` (wait-finished). `false` — przerwane przez Stop.
+    fn wait_finish(&mut self) -> Result<bool, DriverError> {
         let t0 = Instant::now();
         loop {
             let s = self.status()?;
             if s != 0 && s & 0x02 == 0 {
-                return Ok(());
+                return Ok(true);
             }
             if s == 0 && t0.elapsed() > Duration::from_secs(5) {
                 return Err(DriverError::Transport("brak stanu płyty".into()));
             }
             // zatrzymanie w trakcie czekania
             if self.shared.stop.load(Ordering::SeqCst) {
-                return Ok(());
+                return Ok(false);
             }
+            self.advance_estimate();
             // pauza i wznowienie w trakcie programu (koniec pakietu z „-” — granica bezpieczna)
             self.sync_pause();
             std::thread::sleep(Duration::from_millis(2));
@@ -575,7 +634,13 @@ impl Io {
         self.job = None;
         // „I” zdejmuje też pauzę płyty
         self.shared.want_pause.store(false, Ordering::SeqCst);
+        self.advance_estimate();
         self.board_paused = false;
+        // głowica stoi w szacowanym miejscu; kolejne ruchy liczone od niego (bazowanie
+        // przywraca dokładną pozycję)
+        self.plan.clear();
+        self.plan_t = 0.0;
+        self.track.pos = self.estimate();
         self.shared.queue.lock().expect("kolejka").clear();
         if let Err(e) = self.send_realtime(b"I") {
             self.shared.log(format!("! stop: {e}"));
@@ -618,6 +683,11 @@ impl Io {
                     if r.is_ok() && ps.last().is_some_and(|p| !p.wait_finish) {
                         r = self.push_through();
                     }
+                    // polecenia poza zadaniem (jog, bazowanie, przejazd): pozycja docelowa od
+                    // razu, szacowanie w czasie tylko w zadaniu
+                    self.plan.clear();
+                    self.plan_t = 0.0;
+                    self.set_pos(self.track.pos);
                     let _ = reply.send(r);
                 }
                 Some(Cmd::Job(p, o, id)) => self.start_job(p, o, id),
@@ -627,6 +697,7 @@ impl Io {
             if self.shared.stop.swap(false, Ordering::SeqCst) {
                 self.do_stop();
             }
+            self.advance_estimate();
             if self.job.is_some() {
                 self.step_job();
                 // Stop w trakcie pakietu albo czekania na koniec zadania
@@ -715,6 +786,9 @@ impl LihuiyuDriver {
             track: emu::Interp::new(opts.settings.board),
             job: None,
             board_paused: false,
+            plan: VecDeque::new(),
+            plan_t: 0.0,
+            plan_at: Instant::now(),
             last_sent: None,
         };
         let thread = std::thread::spawn(move || io.run(rx));

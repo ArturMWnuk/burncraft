@@ -752,7 +752,7 @@
 | REQ-13-045 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_045_profile_without_pwm_validation`<br>`crates/bc-drivers/tests/k40.rs::req_13_045_no_pwm_power_ignored_warning`<br>`web/e2e/k40.spec.ts::req_13_045_no_pwm_power_field_disabled_with_message` | docs/procedures/M3-gui-checks.md |
 | REQ-13-046 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_046_047_k40_profile_board_compile_and_job`<br>`crates/bc-drivers/tests/k40.rs::req_13_046_board_variant_and_id`<br>`web/e2e/k40.spec.ts::req_13_046_047_k40_board_variant_id_and_scale` |  |
 | REQ-13-047 | M3 | verified | `crates/bc-commands/tests/k40_commands.rs::req_13_046_047_k40_profile_board_compile_and_job`<br>`crates/bc-drivers/tests/k40.rs::req_13_047_steps_per_mm_and_scale`<br>`web/e2e/k40.spec.ts::req_13_046_047_k40_board_variant_id_and_scale` |  |
-| REQ-13-048 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_048_home_rapid_slow_pause_resume`<br>`crates/bc-drivers/tests/k40.rs::req_13_048_stop_interrupts_program_buffered_on_m2_nano` |  |
+| REQ-13-048 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_048_home_rapid_slow_pause_resume`<br>`crates/bc-drivers/tests/k40.rs::req_13_048_stop_interrupts_program_buffered_on_m2_nano`<br>`crates/bc-drivers/tests/k40.rs::req_13_048_head_position_follows_board_in_time`<br>`crates/bc-drivers/tests/k40.rs::req_13_048_pause_resume_program_buffered_on_m2_nano` |  |
 | REQ-13-049 | M3 | in_progress |  | docs/procedures/M3-hardware-k40.md |
 | REQ-13-050 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_050_053_to_070_grbl_variants` |  |
 | REQ-13-051 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_051_moshi_ms10105_over_ch341` |  |
