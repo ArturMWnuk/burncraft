@@ -124,8 +124,11 @@ fn req_13_041_egv_packets_30_bytes_crc8() {
     assert_eq!(run(&mut d, &f), JobStatus::Done);
     let g = e.lock().unwrap();
     assert_eq!(g.crc_errors, 2);
-    // + pakiet dopełnienia po ostatnim: płyta M2 Nano wykonuje pakiet dopiero po następnym
-    assert_eq!(g.accepted, ps.len() + 1);
+    // + pakiet dopełnienia po każdym końcu programu (FNSE-): płyta M2 Nano wykonuje pakiet
+    // dopiero po następnym
+    let ends = ps.iter().filter(|p| p.wait_finish).count();
+    assert!(ends >= 2, "przejazd między programami: {ends}");
+    assert_eq!(g.accepted, ps.len() + ends);
     assert!(d.console().iter().any(|l| l.contains("CRC ERROR")));
 }
 
@@ -780,8 +783,12 @@ fn req_13_039_ch341_native_usb() {
     assert_eq!(d.job().status, JobStatus::Done);
     // ramki 0xA6 dekodowane przez urządzenie USB, inicjalizacja EPP żądaniem 0xB1
     let g = e.lock().unwrap();
-    // + pakiet dopełnienia po ostatnim (płyta M2 Nano wykonuje pakiet po następnym)
-    assert_eq!(g.accepted, egv::packets(&f.bytes).len() + 1);
+    // + pakiet dopełnienia po każdym końcu programu (płyta M2 Nano wykonuje pakiet po następnym)
+    let ps = egv::packets(&f.bytes);
+    assert_eq!(
+        g.accepted,
+        ps.len() + ps.iter().filter(|p| p.wait_finish).count()
+    );
     assert!((burn_mm(&g.trace) - 100.0).abs() < 0.2);
 }
 

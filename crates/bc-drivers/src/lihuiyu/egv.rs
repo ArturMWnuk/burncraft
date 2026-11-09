@@ -367,14 +367,18 @@ impl Egv {
         self.put(b"S1P\n");
     }
 
-    /// Wejście w program: (`I` | `@NSE`) + kod prędkości + przejazd do `start` + `N` +
-    /// deklaracja kierunków + `S1E`. Źródło: MeerK40t `driver.py` (program_mode).
+    /// Początek programu: koniec poprzedniego (`FNSE-`, czekanie) i `I`. Płyta M2 Nano po
+    /// `@NSE` nie wykonuje kolejnego programu (test sprzętowy K40, 2026-11-09), dlatego
+    /// zmiana trybu zawsze kończy program jak przejście do przejazdu w MeerK40t (rapid_mode).
+    fn begin(&mut self) {
+        self.leave(true);
+        self.put(b"I");
+    }
+
+    /// Wejście w program: `I` + kod prędkości + przejazd do `start` + `N` + deklaracja
+    /// kierunków + `S1E`. Źródło: MeerK40t `driver.py` (program_mode).
     pub fn enter(&mut self, speed: &str, start: (i64, i64), horizontal_major: bool) {
-        if self.program {
-            self.put(b"@NSE");
-        } else {
-            self.put(b"I");
-        }
+        self.begin();
         self.put(speed.as_bytes());
         self.default_moves(start);
         self.put(b"N");
@@ -392,10 +396,11 @@ impl Egv {
         self.laser = false;
     }
 
-    /// Wyjście z programu: `FNSE-` (koniec z czekaniem) albo `@NSE` (zmiana trybu).
-    pub fn leave(&mut self, finish: bool) {
+    /// Wyjście z programu: `FNSE-` (koniec z czekaniem). `@NSE` nie jest używane — płyta
+    /// M2 Nano po nim przestaje wykonywać program (test sprzętowy K40, 2026-11-09).
+    pub fn leave(&mut self, _finish: bool) {
         if self.program {
-            self.put(if finish { b"FNSE-\n" } else { b"@NSE" });
+            self.put(b"FNSE-\n");
             self.program = false;
             self.laser = false;
         }
@@ -534,7 +539,7 @@ impl Steps {
     }
 }
 
-/// Próg przejazdu w programie: dłuższe przejazdy idą jako szybkie (wyjście `@NSE`).
+/// Próg przejazdu w programie: dłuższe przejazdy idą jako szybkie (nowy program).
 /// Źródło: MeerK40t (opt_jog_minimum = 256 mil).
 pub const JOG_MINIMUM_STEPS: i64 = 256;
 
@@ -835,11 +840,7 @@ impl JobCompiler for EgvCompiler {
 impl Egv {
     /// Wejście w program rastra z zadanymi kierunkami (deklaracja Y, potem X).
     pub fn enter_with_dirs(&mut self, speed: &str, start: (i64, i64), xpos: bool, ypos: bool) {
-        if self.program {
-            self.put(b"@NSE");
-        } else {
-            self.put(b"I");
-        }
+        self.begin();
         self.put(speed.as_bytes());
         self.default_moves(start);
         self.xpos = xpos;
