@@ -124,7 +124,8 @@ fn req_13_041_egv_packets_30_bytes_crc8() {
     assert_eq!(run(&mut d, &f), JobStatus::Done);
     let g = e.lock().unwrap();
     assert_eq!(g.crc_errors, 2);
-    assert_eq!(g.accepted, ps.len());
+    // + pakiet dopełnienia po ostatnim: płyta M2 Nano wykonuje pakiet dopiero po następnym
+    assert_eq!(g.accepted, ps.len() + 1);
     assert!(d.console().iter().any(|l| l.contains("CRC ERROR")));
 }
 
@@ -162,6 +163,43 @@ fn req_13_041_identical_consecutive_packets_all_executed() {
     std::thread::sleep(Duration::from_millis(50));
     let g = e.lock().unwrap();
     assert_eq!(g.interp.homes, 2);
+    assert_eq!(g.duplicates, 0);
+}
+
+#[test]
+fn req_13_041_m2_nano_stale_status_and_late_execution() {
+    // test sprzętowy K40 (dziennik k40_probe, 2026-11-09): stan tuż po zapisie jest stanem
+    // sprzed zapisu, a przyjęty pakiet płyta wykonuje dopiero po następnym — każdy jog,
+    // bazowanie i zadanie musi mimo to ruszyć głowicę od razu
+    use bc_drivers::driver::Axis;
+    let e = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d = connect(&e, Board::M2);
+    let steps = |mm: f64| (mm * 1000.0 / 25.4).round() as i64;
+    let start = e.lock().unwrap().pos();
+    for i in 1..=4 {
+        d.jog(Axis::X, 10.0, 50.0).unwrap();
+        let g = e.lock().unwrap();
+        assert_eq!(g.pos().0 - start.0, i * steps(10.0), "jog {i}: {:?}", g.trace);
+    }
+    for i in 1..=2 {
+        d.jog(Axis::Y, -10.0, 50.0).unwrap();
+        let g = e.lock().unwrap();
+        assert_eq!(g.pos().1 - start.1, i * steps(10.0), "jog Y {i}: {:?}", g.trace);
+    }
+    d.home().unwrap();
+    assert_eq!(e.lock().unwrap().interp.homes, 1);
+    d.home().unwrap();
+    assert_eq!(e.lock().unwrap().interp.homes, 2);
+    // zadanie: całe wykonane, sterownik nie pisał, zanim płyta odpowiedziała
+    let f = egv_file(&rect_doc(20.0, 100.0), Board::M2);
+    assert_eq!(run(&mut d, &f), JobStatus::Done);
+    let g = e.lock().unwrap();
+    assert!((burn_mm(&g.trace) - 100.0).abs() < 0.5, "{}", burn_mm(&g.trace));
+    assert_eq!(g.collisions, 0);
     assert_eq!(g.duplicates, 0);
 }
 

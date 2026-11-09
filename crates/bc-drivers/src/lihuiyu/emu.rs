@@ -446,6 +446,13 @@ pub struct EmuConfig {
     pub speed: f64,
     /// Bufor wejściowy płyty, bajty. UNVERIFIED: rozmiar bufora płyty nieznany.
     pub buffer: usize,
+    /// Zachowanie płyty M2 Nano zmierzone w teście sprzętowym K40 (2026-11-09, dziennik
+    /// `k40_probe`): (1) dwa odczyty stanu tuż po zapisie zwracają stan sprzed zapisu,
+    /// potem BUSY, potem wynik; stan po wyniku trwa (206 / 207) do następnego zapisu;
+    /// (2) przyjęty pakiet płyta wykonuje dopiero po przyjęciu następnego.
+    /// UNVERIFIED: pakiet zapisany, zanim płyta odpowiedziała na poprzedni, jest odrzucany
+    /// (207) — tak modelujemy wyścig; zachowanie płyty w tym przypadku nie było mierzone.
+    pub m2_nano_timing: bool,
 }
 
 impl Default for EmuConfig {
@@ -455,6 +462,7 @@ impl Default for EmuConfig {
             serial: None,
             speed: f64::INFINITY,
             buffer: 30 * 64,
+            m2_nano_timing: false,
         }
     }
 }
@@ -486,6 +494,12 @@ pub struct LihuiyuEmulator {
     /// Pakiety pominięte jako powtórzenie poprzedniego.
     pub duplicates: usize,
     last_payload: Option<[u8; PAYLOAD]>,
+    /// `m2_nano_timing`: kolejne odczyty stanu po zapisie, ostatni zwrócony stan,
+    /// pakiet przyjęty, czekający na następny, zapisy przed odpowiedzią płyty.
+    script: VecDeque<u8>,
+    last_status: u8,
+    held: Option<[u8; PAYLOAD]>,
+    pub collisions: usize,
 }
 
 impl LihuiyuEmulator {
@@ -509,6 +523,10 @@ impl LihuiyuEmulator {
             addr_writes: 0,
             duplicates: 0,
             last_payload: None,
+            script: VecDeque::new(),
+            last_status: egv::STATUS_OK,
+            held: None,
+            collisions: 0,
         }
     }
 
@@ -533,6 +551,18 @@ impl LihuiyuEmulator {
             return;
         }
         self.last_payload = Some(data);
+        if self.cfg.m2_nano_timing {
+            // wykonanie poprzedniego przyjętego pakietu, ten czeka na następny
+            match self.held.replace(data) {
+                Some(h) => self.execute(h),
+                None => return,
+            }
+        } else {
+            self.execute(data);
+        }
+    }
+
+    fn execute(&mut self, data: [u8; PAYLOAD]) {
         self.received.extend_from_slice(&data);
         if data.starts_with(b"AT") {
             // UNVERIFIED: moc PWM płyty M3 — „AT1” + dwa bajty (MeerK40t driver.py)
@@ -691,6 +721,38 @@ pub fn trace_job(trace: &[EgvMove], st: &Steps) -> bc_plan::Job {
 impl Ch341 for LihuiyuEmulator {
     fn write_data(&mut self, data: &[u8]) -> Result<(), TransportError> {
         self.tick();
+        if self.cfg.m2_nano_timing {
+            let last = self.last_status;
+            if !self.script.is_empty() {
+                // zapis, zanim płyta odpowiedziała na poprzedni pakiet
+                self.collisions += 1;
+                self.crc_errors += 1;
+                self.script = VecDeque::from([last, egv::STATUS_CRC_ERROR]);
+                return Ok(());
+            }
+            let ok = data.len() == 32
+                && data[0] == 0
+                && self.corrupt_next == 0
+                && egv::crc8(&data[1..31]) == data[31];
+            if !ok {
+                self.corrupt_next = self.corrupt_next.saturating_sub(1);
+                self.crc_errors += 1;
+                self.script = VecDeque::from([last, egv::STATUS_CRC_ERROR]);
+                return Ok(());
+            }
+            let mut p = [0u8; PAYLOAD];
+            p.copy_from_slice(&data[1..31]);
+            if self.room() && self.pending.is_none() {
+                self.accept(p);
+                let ack = self.ack.take().unwrap_or(egv::STATUS_OK);
+                self.script = VecDeque::from([last, last, egv::STATUS_BUSY, ack]);
+            } else {
+                self.pending = Some(p);
+                self.ack = None;
+                self.script = VecDeque::from([last, last]);
+            }
+            return Ok(());
+        }
         if data.len() != 32 || data[0] != 0 {
             self.crc_errors += 1;
             self.ack = Some(egv::STATUS_CRC_ERROR);
@@ -725,6 +787,23 @@ impl Ch341 for LihuiyuEmulator {
 
     fn status(&mut self) -> Result<[u8; 6], TransportError> {
         self.tick();
+        if self.cfg.m2_nano_timing {
+            let code = if let Some(s) = self.script.pop_front() {
+                s
+            } else if let Some(a) = self.ack.take() {
+                a
+            } else if self.pending.is_some() {
+                self.busy += 1;
+                egv::STATUS_BUSY
+            } else if !self.running() && self.interp.finished {
+                egv::STATUS_FINISH
+            } else {
+                // stan po odpowiedzi trwa do następnego zapisu (dziennik k40_probe)
+                self.last_status
+            };
+            self.last_status = code;
+            return Ok([0xFF, code, 0, 0, 0, 0]);
+        }
         let code = if let Some(a) = self.ack.take() {
             a
         } else if self.pending.is_some() {
