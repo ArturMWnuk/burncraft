@@ -671,7 +671,10 @@ fn req_13_048_stop_interrupts_program_buffered_on_m2_nano() {
     let t0 = std::time::Instant::now();
     // przejazd do prostokąta wykonany, głowica tnie pierwszy bok
     while e.lock().unwrap().trace.is_empty() {
-        assert!(t0.elapsed() < Duration::from_secs(10), "zadanie nie ruszyło");
+        assert!(
+            t0.elapsed() < Duration::from_secs(10),
+            "zadanie nie ruszyło"
+        );
         std::thread::sleep(Duration::from_millis(10));
     }
     std::thread::sleep(Duration::from_millis(300));

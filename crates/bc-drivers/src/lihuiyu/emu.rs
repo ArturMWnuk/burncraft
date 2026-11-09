@@ -582,6 +582,13 @@ impl LihuiyuEmulator {
             }
             return;
         }
+        if data[0] == b'I' {
+            // Pakiet od „I” przerywa program buforowany w płycie i bieżący ruch (MeerK40t
+            // driver.py: abort/reset). UNVERIFIED: zachowanie płyty (test sprzętowy K40, A15).
+            self.input.clear();
+            self.interp.moves.clear();
+            self.cur = None;
+        }
         self.input.extend(data);
     }
 

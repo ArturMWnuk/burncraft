@@ -233,6 +233,9 @@ struct Shared {
     job: Mutex<JobState>,
     console: Mutex<VecDeque<String>>,
     alive: AtomicBool,
+    /// Żądanie zatrzymania widoczne od razu w wątku płyty, także gdy czeka on na koniec
+    /// zadania albo na potwierdzenie pakietu (test sprzętowy K40, A15).
+    stop: AtomicBool,
     queue: Mutex<VecDeque<(Arc<Vec<Packet>>, JobOptions)>>,
     /// Pozycja wg wysłanych pakietów (kroki).
     pos: Mutex<(i64, i64)>,
@@ -403,7 +406,7 @@ impl Io {
                 return Err(DriverError::Transport("brak stanu płyty".into()));
             }
             // zatrzymanie w trakcie czekania
-            if self.shared.job.lock().expect("zadanie").status == JobStatus::Stopped {
+            if self.shared.stop.load(Ordering::SeqCst) {
                 return Ok(());
             }
             std::thread::sleep(Duration::from_millis(2));
@@ -500,9 +503,6 @@ impl Io {
                 j.acked = i + 1;
                 j.elapsed_s = t0.elapsed().as_secs_f64();
                 drop(j);
-                if self.shared.job.lock().expect("zadanie").status == JobStatus::Stopped {
-                    return;
-                }
                 self.job = Some((p, i + 1, o, t0));
             }
             Err(e) => {
@@ -517,6 +517,26 @@ impl Io {
                 self.end_job(JobStatus::Failed);
             }
         }
+    }
+
+    /// Zatrzymanie: koniec zadania i kolejki, pakiet „I” przerywający program płyty
+    /// (MeerK40t driver.py: abort `I\n`, reset `I*`) i dopełnienie, bo M2 Nano wykonuje
+    /// pakiet dopiero po następnym. UNVERIFIED: „I” przerywa program już buforowany w płycie.
+    fn do_stop(&mut self) {
+        if self.job.is_some() {
+            self.shared.job.lock().expect("zadanie").status = JobStatus::Stopped;
+        }
+        self.job = None;
+        self.paused = false;
+        self.pause_sent = false;
+        self.shared.queue.lock().expect("kolejka").clear();
+        if let Err(e) = self
+            .send_raw(&packet(b"I"))
+            .and_then(|_| self.push_through())
+        {
+            self.shared.log(format!("! stop: {e}"));
+        }
+        self.set_state(RunState::Idle);
     }
 
     /// Granica pakietów bezpieczna dla pakietu czasu rzeczywistego (nie rozcina liczby).
@@ -576,21 +596,18 @@ impl Io {
                         self.shared.job.lock().expect("zadanie").status = JobStatus::Running;
                     }
                 }
-                Some(Cmd::Stop) => {
-                    if self.job.is_some() {
-                        self.shared.job.lock().expect("zadanie").status = JobStatus::Stopped;
-                    }
-                    self.job = None;
-                    self.paused = false;
-                    self.shared.queue.lock().expect("kolejka").clear();
-                    // UNVERIFIED: „I” przerywa program płyty (MeerK40t driver.py: abort)
-                    let _ = self.send(&packet(b"I"));
-                    self.set_state(RunState::Idle);
-                }
-                None => {}
+                // zatrzymanie obsługuje flaga `stop` poniżej
+                Some(Cmd::Stop) | None => {}
+            }
+            if self.shared.stop.swap(false, Ordering::SeqCst) {
+                self.do_stop();
             }
             if self.job.is_some() {
                 self.step_job();
+                // Stop w trakcie pakietu albo czekania na koniec zadania
+                if self.shared.stop.swap(false, Ordering::SeqCst) {
+                    self.do_stop();
+                }
             }
         }
         self.shared.alive.store(false, Ordering::SeqCst);
@@ -631,6 +648,7 @@ impl LihuiyuDriver {
             job: Mutex::new(JobState::default()),
             console: Mutex::new(VecDeque::new()),
             alive: AtomicBool::new(true),
+            stop: AtomicBool::new(false),
             queue: Mutex::new(VecDeque::new()),
             pos: Mutex::new((0, 0)),
         });
@@ -957,6 +975,7 @@ impl Driver for LihuiyuDriver {
     }
 
     fn stop(&mut self) {
+        self.shared.stop.store(true, Ordering::SeqCst);
         let _ = self.tx.send(Cmd::Stop);
     }
 
