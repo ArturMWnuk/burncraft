@@ -738,6 +738,58 @@ fn req_13_048_stop_interrupts_program_buffered_on_m2_nano() {
 }
 
 #[test]
+fn req_13_048_head_position_follows_board_in_time() {
+    // test sprzętowy K40 (2026-11-09): w czasie pracy krzyżyk na kanwie nie poruszał się
+    // jak głowica — pozycja z wysłanych pakietów, a program jest w płycie od razu
+    let e = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        speed: 1.0,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d = connect(&e, Board::M2);
+    let mm = |s: (i64, i64)| [s.0 as f64 * 0.0254, BED[1] - s.1 as f64 * 0.0254];
+    let f = egv_file(&rect_doc(10.0, 100.0), Board::M2);
+    d.send_job(&f, JobOptions::default()).unwrap();
+    let t0 = std::time::Instant::now();
+    let mut samples = 0;
+    while d.job().status == JobStatus::Running && t0.elapsed() < Duration::from_secs(20) {
+        std::thread::sleep(Duration::from_millis(400));
+        if d.job().status != JobStatus::Running {
+            break;
+        }
+        let real = mm(e.lock().unwrap().head());
+        let est = d.status().mpos;
+        let dist = ((real[0] - est[0]).powi(2) + (real[1] - est[1]).powi(2)).sqrt();
+        assert!(
+            dist < 3.0,
+            "krzyżyk {est:?}, głowica {real:?} ({:.1} s)",
+            t0.elapsed().as_secs_f64()
+        );
+        samples += 1;
+    }
+    assert!(samples >= 10, "{samples}");
+    // pauza: krzyżyk stoi razem z głowicą
+    let e = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        speed: 1.0,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d2 = connect(&e, Board::M2);
+    d2.send_job(&f, JobOptions::default()).unwrap();
+    std::thread::sleep(Duration::from_millis(2500));
+    d2.pause().unwrap();
+    std::thread::sleep(Duration::from_millis(300));
+    let p1 = d2.status().mpos;
+    std::thread::sleep(Duration::from_millis(500));
+    assert_eq!(d2.status().mpos, p1);
+    let real = mm(e.lock().unwrap().head());
+    assert!(((real[0] - p1[0]).powi(2) + (real[1] - p1[1]).powi(2)).sqrt() < 3.0);
+    d2.stop();
+}
+
+#[test]
 fn req_13_048_pause_resume_program_buffered_on_m2_nano() {
     // test sprzętowy K40 (2026-11-09): „Pauza” nie działała — program był już w płycie,
     // sterownik czekał na jego koniec, zanim obsłużył pauzę
