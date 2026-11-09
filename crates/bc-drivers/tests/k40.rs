@@ -686,6 +686,50 @@ fn req_13_041_m2_nano_program_reentry_after_travel() {
 }
 
 #[test]
+fn req_13_041_m2_nano_last_moves_before_finish() {
+    // test sprzętowy K40 (2026-11-09): prostokąt bez ostatniego boku. Programy przez
+    // device.raw (20 mm = zzz022): E „B…R…FNSE-” — tylko w prawo; J „B…R…B…FNSE-” — tylko
+    // w prawo; K „B…R…NSEFNSE-” — w prawo i w dół (koniec jak w K40 Whisperer)
+    let run_raw = |line: &str| {
+        let e = LihuiyuEmulator::shared(EmuConfig {
+            board: Board::M2,
+            m2_nano_timing: true,
+            ..Default::default()
+        });
+        let mut d = connect(&e, Board::M2);
+        d.raw(line).unwrap();
+        let t0 = std::time::Instant::now();
+        while e.lock().unwrap().running() && t0.elapsed() < Duration::from_secs(5) {
+            std::thread::sleep(Duration::from_millis(5));
+        }
+        let g = e.lock().unwrap();
+        let p = g.pos();
+        (p.0 as f64 * 0.0254, p.1 as f64 * 0.0254)
+    };
+    let near = |a: (f64, f64), b: (f64, f64)| (a.0 - b.0).abs() < 1.0 && (a.1 - b.1).abs() < 1.0;
+    let e = run_raw("ICV1752241021000191NBRS1EBzzz022Rzzz022FNSE-");
+    assert!(near(e, (20.0, 0.0)), "E {e:?}");
+    let j = run_raw("ICV1752241021000191NBRS1EBzzz022Rzzz022Bzzz022FNSE-");
+    assert!(near(j, (20.0, 0.0)), "J {j:?}");
+    let k = run_raw("ICV1752241021000191NBRS1EBzzz022Rzzz022NSEFNSE-");
+    assert!(near(k, (20.0, 20.0)), "K {k:?}");
+    // zadanie: cały obwód prostokąta (ostatni bok też)
+    let em = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d = connect(&em, Board::M2);
+    let f = egv_file(&rect_doc(20.0, 100.0), Board::M2);
+    assert_eq!(run(&mut d, &f), JobStatus::Done);
+    assert!(
+        (burn_mm(&em.lock().unwrap().trace) - 100.0).abs() < 0.2,
+        "{}",
+        String::from_utf8_lossy(&f.bytes)
+    );
+}
+
+#[test]
 fn req_13_048_stop_interrupts_program_buffered_on_m2_nano() {
     // test sprzętowy K40 (B4/A15, 2026-11-09): „Stop” nie zatrzymał prostokąta przy 5 mm/s —
     // cały program był już w płycie, sterownik czekał na koniec zadania (FNSE-), zanim

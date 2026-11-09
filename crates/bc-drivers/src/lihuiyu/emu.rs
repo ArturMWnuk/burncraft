@@ -12,6 +12,9 @@ use super::Board;
 use crate::ch341::Ch341;
 use crate::transport::TransportError;
 
+/// Znacznik końca pakietu w strumieniu emulatora (nie występuje w EGV).
+const PACKET_END: u8 = 0;
+
 /// Ruch wykonany przez płytę (kroki, Y w dół od narożnika bazowania).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EgvMove {
@@ -55,6 +58,12 @@ pub struct Interp {
     pub nse_stalls: bool,
     pub stalled: bool,
     at: bool,
+    /// Ruchy z bieżącego pakietu niedomknięte przez `N`: koniec programu `FN` je odrzuca.
+    /// Zmierzone w teście sprzętowym K40 (M2 Nano, 2026-11-09, programy E–K przez
+    /// `device.raw`): „…B…R…FNSE-” — ruchy z pakietu z `F` przepadają; „…R…NSEFNSE-” — wykonane.
+    /// Wzorzec końca programu `N…SE` + `FNSE`: K40 Whisperer (egv.py, rapid_move_fast).
+    pub f_drops_open_moves: bool,
+    open_moves: usize,
     /// Prędkość z ostatniego kodu, mm/s.
     pub speed: f64,
     /// Krok rastra `G` (0 = brak).
@@ -95,6 +104,8 @@ impl Interp {
             nse_stalls: false,
             stalled: false,
             at: false,
+            f_drops_open_moves: false,
+            open_moves: 0,
             speed: 10.0,
             raster_step: 0,
             horizontal_major: false,
@@ -134,6 +145,17 @@ impl Interp {
         };
         self.pos = to;
         self.moves.push_back(m);
+        self.open_moves += 1;
+    }
+
+    /// Granica pakietu (emulator): ruchy dotąd przyjęte są domknięte.
+    /// M2 Nano wykonuje odległość zgromadzoną do końca pakietu (program J: „…Bzzz|022R…”
+    /// — ruch w prawo wykonany, choć reszta pakietu z `F` przepadła).
+    pub fn packet_boundary(&mut self) {
+        if self.f_drops_open_moves && self.compact && self.number.is_empty() {
+            self.exec();
+        }
+        self.open_moves = 0;
     }
 
     fn sign(p: bool) -> i64 {
@@ -260,6 +282,10 @@ impl Interp {
 
     /// Jeden bajt strumienia.
     pub fn byte(&mut self, b: u8) {
+        if b == PACKET_END {
+            self.packet_boundary();
+            return;
+        }
         if self.stalled {
             return;
         }
@@ -414,6 +440,17 @@ impl Interp {
             }
             b'N' => {
                 self.exec();
+                if self.compact && self.last[1] == b'F' && self.f_drops_open_moves {
+                    // płyta M2 Nano: koniec programu `FN` odrzuca niedomknięte ruchy
+                    // z bieżącego pakietu (dopełnienie `F` bez `N` ich nie odrzuca)
+                    let keep = self.moves.len().saturating_sub(self.open_moves);
+                    if let Some(m) = self.moves.get(keep) {
+                        self.pos = m.from;
+                    }
+                    self.moves.truncate(keep);
+                }
+                // `N` domyka ruchy (program K: „…R…NSEFNSE-” wykonany w całości)
+                self.open_moves = 0;
                 self.laser = false;
                 self.compact = false;
             }
@@ -534,6 +571,7 @@ impl LihuiyuEmulator {
     pub fn new(cfg: EmuConfig) -> Self {
         let mut interp = Interp::new(cfg.board);
         interp.nse_stalls = cfg.m2_nano_timing;
+        interp.f_drops_open_moves = cfg.m2_nano_timing;
         LihuiyuEmulator {
             interp,
             cfg,
@@ -634,6 +672,7 @@ impl LihuiyuEmulator {
             self.interp.stalled = false;
         }
         self.input.extend(data);
+        self.input.push_back(PACKET_END);
     }
 
     /// Wykonanie w czasie wirtualnym.
@@ -645,11 +684,13 @@ impl LihuiyuEmulator {
                 return;
             }
             if self.cur.is_none() {
-                // wstrzymana płyta czyta dalej tylko do polecenia wznowienia
-                while self.interp.moves.is_empty() || self.interp.paused {
-                    match self.input.pop_front() {
-                        Some(b) => self.interp.byte(b),
-                        None => break,
+                // płyta czyta cały pakiet naraz (F w programie odrzuca jego niedomknięte ruchy)
+                while self.interp.moves.is_empty() && !self.input.is_empty() {
+                    while let Some(b) = self.input.pop_front() {
+                        self.interp.byte(b);
+                        if b == PACKET_END {
+                            break;
+                        }
                     }
                 }
                 if self.interp.paused {
