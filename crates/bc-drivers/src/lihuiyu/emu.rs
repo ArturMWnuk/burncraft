@@ -487,6 +487,14 @@ impl Default for EmuConfig {
     }
 }
 
+/// Pakiet czasu rzeczywistego (`PN` — pauza, `I` — przerwanie, samo dopełnienie po nich):
+/// płyta przyjmuje go także przy pełnym buforze (MeerK40t controller.py: pakiety czasu
+/// rzeczywistego omijają stan BUSY). UNVERIFIED: zachowanie płyty przy pełnym buforze.
+fn realtime(p: &[u8; PAYLOAD]) -> bool {
+    let pad = |k: usize| p[k..].iter().all(|b| *b == egv::PAD);
+    (p.starts_with(b"PN") && pad(2)) || (p[0] == b'I' && pad(1)) || pad(0)
+}
+
 /// Emulator płyty Lihuiyu za interfejsem [`Ch341`].
 pub struct LihuiyuEmulator {
     pub cfg: EmuConfig,
@@ -604,7 +612,15 @@ impl LihuiyuEmulator {
             }
             return;
         }
+        if realtime(&data) && data[0] == b'P' {
+            // Pakiet „PN” wstrzymuje / wznawia płytę od razu, także w trakcie programu
+            // (MeerK40t driver.py: pause/resume jako pakiet czasu rzeczywistego).
+            // UNVERIFIED: zachowanie płyty (test sprzętowy K40, pauza).
+            self.interp.paused = !self.interp.paused;
+            return;
+        }
         if data[0] == b'I' {
+            self.interp.paused = false;
             // Pakiet od „I” przerywa program buforowany w płycie i bieżący ruch (MeerK40t
             // driver.py: abort/reset). UNVERIFIED: zachowanie płyty (test sprzętowy K40, A15).
             self.input.clear();
@@ -619,6 +635,10 @@ impl LihuiyuEmulator {
     pub fn advance(&mut self, dt: f64) {
         let mut budget = dt * self.cfg.speed;
         loop {
+            if self.interp.paused && self.cur.is_some() {
+                // wstrzymana płyta stoi w trakcie ruchu
+                return;
+            }
             if self.cur.is_none() {
                 // wstrzymana płyta czyta dalej tylko do polecenia wznowienia
                 while self.interp.moves.is_empty() || self.interp.paused {
@@ -687,6 +707,31 @@ impl LihuiyuEmulator {
 
     fn interp_start(&self) -> (i64, i64) {
         (0, 0)
+    }
+
+    /// Rzeczywista pozycja głowicy (kroki), także w trakcie ruchu.
+    pub fn head(&mut self) -> (i64, i64) {
+        self.tick();
+        match self.cur {
+            Some((m, left)) => {
+                let len = (((m.to.0 - m.from.0) as f64).powi(2)
+                    + ((m.to.1 - m.from.1) as f64).powi(2))
+                .sqrt()
+                    * 25.4
+                    / 1000.0;
+                let total = len / m.speed.max(0.01);
+                let f = if total > 0.0 {
+                    (1.0 - left / total).clamp(0.0, 1.0)
+                } else {
+                    1.0
+                };
+                (
+                    m.from.0 + ((m.to.0 - m.from.0) as f64 * f).round() as i64,
+                    m.from.1 + ((m.to.1 - m.from.1) as f64 * f).round() as i64,
+                )
+            }
+            None => self.pos(),
+        }
     }
 
     /// Tor jako zadanie w mm dokumentu (PNG porównywany z podglądem planera, REQ-19-012).
@@ -771,7 +816,7 @@ impl Ch341 for LihuiyuEmulator {
             }
             let mut p = [0u8; PAYLOAD];
             p.copy_from_slice(&data[1..31]);
-            if self.room() && self.pending.is_none() {
+            if realtime(&p) || self.room() && self.pending.is_none() {
                 self.accept(p);
                 let ack = self.ack.take().unwrap_or(egv::STATUS_OK);
                 self.script = VecDeque::from([last, last, egv::STATUS_BUSY, ack]);
@@ -799,7 +844,7 @@ impl Ch341 for LihuiyuEmulator {
             self.ack = Some(egv::STATUS_CRC_ERROR);
             return Ok(());
         }
-        if self.room() && self.pending.is_none() {
+        if realtime(&p) || self.room() && self.pending.is_none() {
             self.ack = Some(egv::STATUS_OK);
             self.accept(p);
         } else {

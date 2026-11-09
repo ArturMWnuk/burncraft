@@ -737,6 +737,55 @@ fn req_13_048_stop_interrupts_program_buffered_on_m2_nano() {
     assert_eq!(e.lock().unwrap().interp.homes, 1);
 }
 
+#[test]
+fn req_13_048_pause_resume_program_buffered_on_m2_nano() {
+    // test sprzętowy K40 (2026-11-09): „Pauza” nie działała — program był już w płycie,
+    // sterownik czekał na jego koniec, zanim obsłużył pauzę
+    let e = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        speed: 1.0,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d = connect(&e, Board::M2);
+    // obwód 100 mm przy 10 mm/s: 10 s
+    let f = egv_file(&rect_doc(10.0, 100.0), Board::M2);
+    d.send_job(&f, JobOptions::default()).unwrap();
+    let t0 = std::time::Instant::now();
+    while e.lock().unwrap().trace.is_empty() {
+        assert!(
+            t0.elapsed() < Duration::from_secs(10),
+            "zadanie nie ruszyło"
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    std::thread::sleep(Duration::from_millis(300));
+    d.pause().unwrap();
+    let t0 = std::time::Instant::now();
+    while d.job().status != JobStatus::Paused || !e.lock().unwrap().interp.paused {
+        assert!(
+            t0.elapsed() < Duration::from_secs(1),
+            "pauza nie obsłużona: {:?}",
+            d.job().status
+        );
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    // płyta stoi w trakcie programu
+    let n = e.lock().unwrap().trace.len();
+    let at = e.lock().unwrap().head();
+    std::thread::sleep(Duration::from_millis(500));
+    assert_eq!(e.lock().unwrap().trace.len(), n);
+    assert_eq!(e.lock().unwrap().head(), at);
+    assert!(burn_mm(&e.lock().unwrap().trace) < 50.0);
+    d.resume().unwrap();
+    assert_eq!(d.wait_job(Duration::from_secs(30)).status, JobStatus::Done);
+    let t0 = std::time::Instant::now();
+    while e.lock().unwrap().running() && t0.elapsed() < Duration::from_secs(10) {
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    assert!((burn_mm(&e.lock().unwrap().trace) - 100.0).abs() < 0.2);
+}
+
 // ---------- REQ-13-039: CH341 natywnie przez USB ----------
 
 struct EmuOpener(Arc<dyn UsbBackend>);
