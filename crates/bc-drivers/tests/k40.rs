@@ -128,6 +128,43 @@ fn req_13_041_egv_packets_30_bytes_crc8() {
     assert!(d.console().iter().any(|l| l.contains("CRC ERROR")));
 }
 
+#[test]
+fn req_13_041_identical_consecutive_packets_all_executed() {
+    // test sprzętowy K40 (B4/A6): co drugi jednakowy jog („IRz139S1P”) nie ruszał głowicy —
+    // płyta pomija pakiet identyczny z poprzednim; sterownik musi je rozdzielić
+    use bc_drivers::driver::Axis;
+    let e = emu(Board::M2);
+    let mut d = connect(&e, Board::M2);
+    let start = e.lock().unwrap().pos();
+    for _ in 0..4 {
+        d.jog(Axis::X, 10.0, 50.0).unwrap();
+    }
+    for _ in 0..2 {
+        d.jog(Axis::Y, -10.0, 50.0).unwrap();
+    }
+    std::thread::sleep(Duration::from_millis(50));
+    let g = e.lock().unwrap();
+    let steps = |mm: f64| (mm * 1000.0 / 25.4).round() as i64;
+    // płyta przejechała wszystkie 4 × 10 mm w X i 2 × 10 mm w Y (Y w dół = kroki w górę)
+    assert_eq!(g.pos().0 - start.0, 4 * steps(10.0), "{:?}", g.trace);
+    assert_eq!(g.pos().1 - start.1, 2 * steps(10.0), "{:?}", g.trace);
+    // pozycja sterownika zgodna z płytą
+    let st = d.status();
+    let p = Steps::new(&K40Settings::default(), BED[1]).mm((g.pos().0 as f64, g.pos().1 as f64));
+    assert!(
+        (st.mpos[0] - p.x).abs() < 0.05 && (st.mpos[1] - p.y).abs() < 0.05,
+        "{st:?}"
+    );
+    // podwójne bazowanie: oba pakiety wykonane
+    drop(g);
+    d.home().unwrap();
+    d.home().unwrap();
+    std::thread::sleep(Duration::from_millis(50));
+    let g = e.lock().unwrap();
+    assert_eq!(g.interp.homes, 2);
+    assert_eq!(g.duplicates, 0);
+}
+
 // ---------- REQ-13-042: stany OK / BUSY / CRC / zadanie zakończone ----------
 
 #[test]

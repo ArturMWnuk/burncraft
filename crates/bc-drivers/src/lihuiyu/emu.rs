@@ -483,6 +483,9 @@ pub struct LihuiyuEmulator {
     pub corrupt_next: usize,
     /// Zapisy adresu EPP (Lihuiyu ich nie używa).
     pub addr_writes: usize,
+    /// Pakiety pominięte jako powtórzenie poprzedniego.
+    pub duplicates: usize,
+    last_payload: Option<[u8; PAYLOAD]>,
 }
 
 impl LihuiyuEmulator {
@@ -504,6 +507,8 @@ impl LihuiyuEmulator {
             power: None,
             corrupt_next: 0,
             addr_writes: 0,
+            duplicates: 0,
+            last_payload: None,
         }
     }
 
@@ -517,6 +522,17 @@ impl LihuiyuEmulator {
 
     fn accept(&mut self, data: [u8; PAYLOAD]) {
         self.accepted += 1;
+        // Pakiet identyczny z poprzednim płyta potwierdza (OK), ale go nie wykonuje.
+        // Zaobserwowane w teście sprzętowym K40 (M2 Nano, 2026-11-09): co drugi z kolejnych
+        // jednakowych przejazdów `IRz139S1P` nie ruszał głowicy. UNVERIFIED: przyczyna
+        // (prawdopodobnie płyta traktuje go jako ponowienie już wykonanego pakietu).
+        if self.last_payload == Some(data) {
+            // kolejny taki sam pakiet płyta znów wykonuje (co drugi)
+            self.duplicates += 1;
+            self.last_payload = None;
+            return;
+        }
+        self.last_payload = Some(data);
         self.received.extend_from_slice(&data);
         if data.starts_with(b"AT") {
             // UNVERIFIED: moc PWM płyty M3 — „AT1” + dwa bajty (MeerK40t driver.py)
