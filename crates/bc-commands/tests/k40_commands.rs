@@ -93,6 +93,37 @@ fn req_13_046_047_k40_profile_board_compile_and_job() {
 }
 
 #[test]
+fn req_03_003_connect_sets_document_workspace_from_profile() {
+    // test sprzętowy K40 (B4/A5): po bazowaniu w lewy górny róg krzyżyk głowicy stał w
+    // połowie wysokości kanwy — dokument 400×400 mm, stół K40 310×210 mm
+    let r = Registry::builtin();
+    let mut s = setup(
+        &r,
+        "ws",
+        json!({"name": "K40", "driver": "lihuiyu",
+               "transport": {"kind": "emulator", "variant": "lihuiyu"},
+               "workspace": [310, 210]}),
+    );
+    let d = run(&r, &mut s, "document.inspect", json!({}));
+    assert_eq!(d["workspace"], json!([400.0, 400.0]));
+    let rev = s.revision;
+    run(&r, &mut s, "machine.connect", json!({"name": "K40"}));
+    let d = run(&r, &mut s, "document.inspect", json!({}));
+    assert_eq!(d["workspace"], json!([310.0, 210.0]));
+    // zmiana dokumentu widoczna dla okna (doc.changed)
+    assert!(s.revision > rev);
+    // narożnik bazowania K40 (lewy górny) = lewy górny róg obszaru dokumentu
+    run(&r, &mut s, "device.home", json!({}));
+    let st = run(&r, &mut s, "machine.status", json!({}));
+    let h = st["head"].as_array().unwrap();
+    assert!(
+        (h[0].as_f64().unwrap() - 0.0).abs() < 0.01
+            && (h[1].as_f64().unwrap() - 210.0).abs() < 0.01,
+        "{st}"
+    );
+}
+
+#[test]
 fn req_13_052_moshi_job_via_registry() {
     let r = Registry::builtin();
     let mut s = setup(
