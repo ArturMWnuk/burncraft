@@ -396,11 +396,14 @@ impl Egv {
         self.laser = false;
     }
 
-    /// Wyjście z programu: `FNSE-` (koniec z czekaniem). `@NSE` nie jest używane — płyta
-    /// M2 Nano po nim przestaje wykonywać program (test sprzętowy K40, 2026-11-09).
+    /// Wyjście z programu: `NSE` (domknięcie ostatnich ruchów) i `FNSE-` (koniec
+    /// z czekaniem). Płyta M2 Nano odrzuca ruchy pakietu niedomknięte przez `N` przed
+    /// końcem `FN` (test sprzętowy K40, 2026-11-09: prostokąt bez ostatniego boku) — koniec
+    /// jak w K40 Whisperer (`N…SE` + `FNSE`). `@NSE` nie jest używane — płyta M2 Nano po nim
+    /// przestaje wykonywać program.
     pub fn leave(&mut self, _finish: bool) {
         if self.program {
-            self.put(b"FNSE-\n");
+            self.put(b"NSEFNSE-\n");
             self.program = false;
             self.laser = false;
         }
