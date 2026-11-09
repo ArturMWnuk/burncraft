@@ -238,6 +238,8 @@ struct Shared {
     stop: AtomicBool,
     /// Żądana pauza zadania (obsługa także w trakcie czekania na koniec programu).
     want_pause: AtomicBool,
+    /// Połączenie z płytą utracone (błąd transferu CH341).
+    lost: AtomicBool,
     queue: Mutex<VecDeque<(Arc<Vec<Packet>>, JobOptions)>>,
     /// Pozycja wg wysłanych pakietów (kroki).
     pos: Mutex<(i64, i64)>,
@@ -287,8 +289,18 @@ struct Io {
 
 impl Io {
     fn status(&mut self) -> Result<u8, DriverError> {
-        let s = self.dev.status().map_err(|e| DriverError::Transport(e.0))?;
+        let r = self.dev.status();
+        let s = self.io(r)?;
         Ok(s[1])
+    }
+
+    /// Błąd transferu CH341 (np. odłączony kabel USB) kończy połączenie: wątek płyty kończy
+    /// się, stan „rozłączony”, więc „Połącz” łączy od nowa (test sprzętowy K40, A18).
+    fn io<T>(&self, r: Result<T, crate::transport::TransportError>) -> Result<T, DriverError> {
+        r.map_err(|e| {
+            self.shared.lost.store(true, Ordering::SeqCst);
+            DriverError::Transport(e.0)
+        })
     }
 
     /// Wysyła pakiet; pakiet identyczny z poprzednim poprzedza pakiet samego dopełnienia.
@@ -332,9 +344,8 @@ impl Io {
         // dopełnienie bez czekania na odpowiedź: M2 Nano wykonuje pakiet po następnym,
         // a wstrzymana płyta z pełnym buforem nie przyjmie dopełnienia do wznowienia
         let fill = egv::frame(&[egv::PAD; egv::PAYLOAD]);
-        self.dev
-            .write_data(&fill)
-            .map_err(|e| DriverError::Transport(e.0))?;
+        let r = self.dev.write_data(&fill);
+        self.io(r)?;
         self.last_sent = None;
         std::thread::sleep(SETTLE);
         Ok(())
@@ -358,9 +369,8 @@ impl Io {
                 std::thread::sleep(Duration::from_millis(2));
                 before = self.status()?;
             }
-            self.dev
-                .write_data(&frame)
-                .map_err(|e| DriverError::Transport(e.0))?;
+            let r = self.dev.write_data(&frame);
+            self.io(r)?;
             let written = Instant::now();
             let mut fresh = false;
             for i in 0..POLLS {
@@ -705,6 +715,14 @@ impl Io {
                     self.do_stop();
                 }
             }
+            if self.shared.lost.load(Ordering::SeqCst) {
+                if self.job.is_some() {
+                    self.end_job(JobStatus::Failed);
+                }
+                self.shared
+                    .log("! połączenie z płytą utracone — podłącz kabel i połącz ponownie".into());
+                break;
+            }
         }
         self.shared.alive.store(false, Ordering::SeqCst);
     }
@@ -746,6 +764,7 @@ impl LihuiyuDriver {
             alive: AtomicBool::new(true),
             stop: AtomicBool::new(false),
             want_pause: AtomicBool::new(false),
+            lost: AtomicBool::new(false),
             queue: Mutex::new(VecDeque::new()),
             pos: Mutex::new((0, 0)),
         });
