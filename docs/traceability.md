@@ -897,7 +897,7 @@
 | REQ-13-190 | LATER | todo |  |  |
 | REQ-13-191 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_191_017_simulator_device` |  |
 | REQ-13-192 | M2 | verified | `crates/bc-drivers/tests/driver_jobs.rs::req_13_192_find_my_laser`<br>`crates/bc-drivers/tests/hardware_m25.rs::req_13_192_find_profile_workspace_from_max_travel` |  |
-| REQ-13-193 | M3 | verified | `crates/bc-commands/tests/m31_commands.rs::req_13_193_machine_find_lists_usb_lasers`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_find_my_laser_lists_usb_lasers_by_vid_pid`<br>`web/e2e/usb.spec.ts::req_13_193_find_my_laser_shows_usb_lasers` |  |
+| REQ-13-193 | M3 | verified | `crates/bc-commands/tests/m31_commands.rs::req_13_193_machine_find_lists_usb_lasers`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_find_my_laser_lists_usb_lasers_by_vid_pid`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_windows_instance_id_parsed`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_driverless_laser_listed_on_windows`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_driverless_laser_found_by_wizard`<br>`crates/bc-drivers/tests/usb_udp.rs::req_13_193_windows_pnp_enumeration_runs`<br>`web/e2e/usb.spec.ts::req_13_193_find_my_laser_shows_usb_lasers` |  |
 | REQ-13-194 | M3 | deviation |  |  |
 | REQ-13-195 | M6 | todo |  |  |
 | REQ-13-196 | M2 | verified | `crates/bc-commands/tests/machine_commands.rs::req_13_191_196_028_profiles_connect_select`<br>`crates/bc-drivers/tests/driver_jobs.rs::req_13_196_028_profiles_and_multiple_devices`<br>`web/e2e/machine.spec.ts::req_13_196_laser_window_adds_serial_profile` |  |

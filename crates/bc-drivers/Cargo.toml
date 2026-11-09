@@ -18,6 +18,11 @@ tungstenite.workspace = true
 serialport = "4"
 nusb = "0.2.9"
 
+# Windows: urządzenia USB bez sterownika (kreator „Znajdź mój laser”); ta sama wersja i
+# funkcje co w nusb — bez nowych pakietów.
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Devices_DeviceAndDriverInstallation"] }
+
 [dev-dependencies]
 bc-geom.workspace = true
 tiny-skia.workspace = true

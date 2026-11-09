@@ -272,22 +272,105 @@ pub struct PnpUsbDevice {
 /// VID/PID z identyfikatora wystąpienia `USB\VID_xxxx&PID_xxxx\…` (urządzenie, nie
 /// interfejs urządzenia złożonego `&MI_xx`).
 pub fn parse_usb_instance_id(id: &str) -> Option<(u16, u16)> {
-    let _ = id;
-    None
+    let up = id.to_ascii_uppercase();
+    let hw = up.strip_prefix(r"USB\")?.split('\\').next()?;
+    let mut parts = hw.split('&');
+    let vid = parts.next()?.strip_prefix("VID_")?;
+    let pid = parts.next()?.strip_prefix("PID_")?;
+    // `&MI_xx` = interfejs urządzenia złożonego, nie samo urządzenie
+    if parts.next().is_some() || vid.len() != 4 || pid.len() != 4 {
+        return None;
+    }
+    Some((
+        u16::from_str_radix(vid, 16).ok()?,
+        u16::from_str_radix(pid, 16).ok()?,
+    ))
 }
 
 /// Dopisuje do listy `nusb` urządzenia znanych rodzin laserów, których `nusb` nie zwrócił.
 pub fn add_unlisted_devices(list: &mut Vec<UsbDeviceInfo>, pnp: &[PnpUsbDevice]) {
-    let _ = (list, pnp);
+    for f in USB_FAMILIES {
+        let found: Vec<&PnpUsbDevice> = pnp
+            .iter()
+            .filter(|d| parse_usb_instance_id(&d.instance_id) == Some((f.vid, f.pid)))
+            .collect();
+        let listed = list
+            .iter()
+            .filter(|d| (d.vid, d.pid) == (f.vid, f.pid))
+            .count();
+        for d in found.into_iter().skip(listed) {
+            list.push(UsbDeviceInfo {
+                vid: f.vid,
+                pid: f.pid,
+                bus: String::new(),
+                address: 0,
+                serial: None,
+                manufacturer: None,
+                product: None,
+                driver: d.service.clone(),
+                access: UsbAccess::from_windows_driver(d.service.as_deref()),
+            });
+        }
+    }
 }
 
 /// Obecne urządzenia USB z menedżera urządzeń Windows (cfgmgr32), także bez sterownika.
 #[cfg(windows)]
 pub fn windows_pnp_usb_devices() -> Vec<PnpUsbDevice> {
-    vec![PnpUsbDevice {
-        instance_id: String::new(),
-        service: None,
-    }]
+    use windows_sys::Win32::Devices::DeviceAndDriverInstallation::{
+        CM_Get_DevNode_Registry_PropertyW, CM_Get_Device_ID_ListW, CM_Get_Device_ID_List_SizeW,
+        CM_Locate_DevNodeW, CM_DRP_SERVICE, CM_GETIDLIST_FILTER_ENUMERATOR,
+        CM_GETIDLIST_FILTER_PRESENT, CM_LOCATE_DEVNODE_NORMAL, CR_SUCCESS,
+    };
+    let wide = |s: &str| s.encode_utf16().chain([0]).collect::<Vec<u16>>();
+    let filter = wide("USB");
+    let flags = CM_GETIDLIST_FILTER_ENUMERATOR | CM_GETIDLIST_FILTER_PRESENT;
+    let mut len = 0u32;
+    // SAFETY: wskaźniki na lokalne bufory o podanej długości.
+    if unsafe { CM_Get_Device_ID_List_SizeW(&mut len, filter.as_ptr(), flags) } != CR_SUCCESS {
+        return Vec::new();
+    }
+    let mut buf = vec![0u16; len as usize + 1];
+    if unsafe { CM_Get_Device_ID_ListW(filter.as_ptr(), buf.as_mut_ptr(), len, flags) }
+        != CR_SUCCESS
+    {
+        return Vec::new();
+    }
+    buf.split(|&c| c == 0)
+        .filter(|s| !s.is_empty())
+        .map(String::from_utf16_lossy)
+        .filter(|id| id.to_ascii_uppercase().starts_with(r"USB\"))
+        .map(|instance_id| {
+            let id = wide(&instance_id);
+            let mut dev = 0u32;
+            let mut service = None;
+            if unsafe { CM_Locate_DevNodeW(&mut dev, id.as_ptr(), CM_LOCATE_DEVNODE_NORMAL) }
+                == CR_SUCCESS
+            {
+                let mut b = [0u16; 256];
+                let mut size = std::mem::size_of_val(&b) as u32;
+                let r = unsafe {
+                    CM_Get_DevNode_Registry_PropertyW(
+                        dev,
+                        CM_DRP_SERVICE,
+                        std::ptr::null_mut(),
+                        b.as_mut_ptr().cast(),
+                        &mut size,
+                        0,
+                    )
+                };
+                if r == CR_SUCCESS {
+                    let s = String::from_utf16_lossy(&b[..(size as usize / 2).min(b.len())]);
+                    let s = s.trim_end_matches('\0').trim();
+                    service = (!s.is_empty()).then(|| s.to_string());
+                }
+            }
+            PnpUsbDevice {
+                instance_id,
+                service,
+            }
+        })
+        .collect()
 }
 
 // ---------- nusb ----------
@@ -325,35 +408,50 @@ impl NusbBackend {
 impl UsbBackend for NusbBackend {
     fn list(&self) -> Vec<UsbDeviceInfo> {
         use nusb::MaybeFuture;
-        let Ok(devs) = nusb::list_devices().wait() else {
-            return Vec::new();
-        };
-        devs.map(|d| {
-            let mut info = Self::info(&d);
-            // Linux/macOS: dostęp sprawdzany próbą otwarcia, tylko dla znanych rodzin laserów
-            if info.access == UsbAccess::Unknown && usb_family(info.vid, info.pid).is_some() {
-                info.access = match d.open().wait() {
-                    Ok(_) => UsbAccess::Ready,
-                    Err(e) => match e.kind() {
-                        nusb::ErrorKind::PermissionDenied => UsbAccess::PermissionDenied,
-                        nusb::ErrorKind::Busy => UsbAccess::Busy,
-                        _ => UsbAccess::Unknown,
-                    },
-                };
-            }
-            info
-        })
-        .collect()
+        let devs = nusb::list_devices()
+            .wait()
+            .map(|d| d.collect::<Vec<_>>())
+            .unwrap_or_default();
+        #[allow(unused_mut)]
+        let mut list: Vec<UsbDeviceInfo> = devs
+            .iter()
+            .map(|d| {
+                let mut info = Self::info(d);
+                // Linux/macOS: dostęp sprawdzany próbą otwarcia, tylko dla znanych rodzin laserów
+                if info.access == UsbAccess::Unknown && usb_family(info.vid, info.pid).is_some() {
+                    info.access = match d.open().wait() {
+                        Ok(_) => UsbAccess::Ready,
+                        Err(e) => match e.kind() {
+                            nusb::ErrorKind::PermissionDenied => UsbAccess::PermissionDenied,
+                            nusb::ErrorKind::Busy => UsbAccess::Busy,
+                            _ => UsbAccess::Unknown,
+                        },
+                    };
+                }
+                info
+            })
+            .collect();
+        // Windows: znane lasery bez sterownika (nusb ich nie zwraca)
+        #[cfg(windows)]
+        add_unlisted_devices(&mut list, &windows_pnp_usb_devices());
+        list
     }
 
     fn open(&self, sel: &UsbSelector) -> Result<Box<dyn UsbBulk>, TransportError> {
         use nusb::transfer::{Bulk, In, Out};
         use nusb::MaybeFuture;
         let devs = nusb::list_devices().wait().map_err(|e| nusb_err(sel, e))?;
-        let d = devs
-            .into_iter()
-            .find(|d| sel.matches(&Self::info(d)))
-            .ok_or_else(|| nusb_err(sel, "nie znaleziono urządzenia"))?;
+        let Some(d) = devs.into_iter().find(|d| sel.matches(&Self::info(d))) else {
+            // urządzenie widoczne tylko w menedżerze urządzeń: powód zamiast „nie znaleziono”
+            let access = self
+                .list()
+                .into_iter()
+                .find(|d| sel.matches(d))
+                .map(|d| d.access);
+            return Err(access
+                .and_then(|a| access_error(sel, &a))
+                .unwrap_or_else(|| nusb_err(sel, "nie znaleziono urządzenia")));
+        };
         let info = Self::info(&d);
         if let Some(e) = access_error(sel, &info.access) {
             return Err(e);
