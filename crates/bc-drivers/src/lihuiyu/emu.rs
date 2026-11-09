@@ -49,6 +49,12 @@ pub struct Interp {
     pub laser: bool,
     pub paused: bool,
     pub finished: bool,
+    /// Płyta po `@NSE` przestaje wykonywać program (do pakietu od `I`). Zmierzone w teście
+    /// sprzętowym K40 (M2 Nano, 2026-11-09, programy A/B/C przez `device.raw`): po `@NSE`
+    /// i ponownym wejściu w program (z `I` i bez) głowica staje, płyta nie zgłasza końca.
+    pub nse_stalls: bool,
+    pub stalled: bool,
+    at: bool,
     /// Prędkość z ostatniego kodu, mm/s.
     pub speed: f64,
     /// Krok rastra `G` (0 = brak).
@@ -86,6 +92,9 @@ impl Interp {
             laser: false,
             paused: false,
             finished: false,
+            nse_stalls: false,
+            stalled: false,
+            at: false,
             speed: 10.0,
             raster_step: 0,
             horizontal_major: false,
@@ -251,6 +260,9 @@ impl Interp {
 
     /// Jeden bajt strumienia.
     pub fn byte(&mut self, b: u8) {
+        if self.stalled {
+            return;
+        }
         if self.finished && b != b'I' {
             return;
         }
@@ -363,6 +375,7 @@ impl Interp {
             b'D' => self.laser = true,
             b'U' => self.laser = false,
             b'I' => {
+                self.at = false;
                 self.compact = false;
                 self.finished = false;
                 self.paused = false;
@@ -390,9 +403,12 @@ impl Interp {
                         self.compact = false;
                         if self.finish_flag {
                             self.finished = true;
+                        } else if self.at && self.nse_stalls {
+                            self.stalled = true;
                         }
                     }
                 }
+                self.at = false;
                 self.finish_flag = false;
                 self.mode = None;
             }
@@ -421,7 +437,11 @@ impl Interp {
                 self.mode = None;
             }
             b'F' => self.finish_flag = true,
-            b'@' => self.finish_flag = false,
+            b'@' => {
+                self.finish_flag = false;
+                // `@` w programie: wyjście `@NSE` (N kończy tryb programu)
+                self.at = self.compact;
+            }
             b'V' => self.speed_parse = Some(SpeedParse::default()),
             b'G' => self.g_digits = Some(String::new()),
             b'W' => self.skip_digits = 3,
@@ -504,8 +524,10 @@ pub struct LihuiyuEmulator {
 
 impl LihuiyuEmulator {
     pub fn new(cfg: EmuConfig) -> Self {
+        let mut interp = Interp::new(cfg.board);
+        interp.nse_stalls = cfg.m2_nano_timing;
         LihuiyuEmulator {
-            interp: Interp::new(cfg.board),
+            interp,
             cfg,
             input: VecDeque::new(),
             pending: None,
@@ -588,6 +610,7 @@ impl LihuiyuEmulator {
             self.input.clear();
             self.interp.moves.clear();
             self.cur = None;
+            self.interp.stalled = false;
         }
         self.input.extend(data);
     }

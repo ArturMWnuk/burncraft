@@ -654,6 +654,35 @@ fn req_13_048_home_rapid_slow_pause_resume() {
 }
 
 #[test]
+fn req_13_041_m2_nano_program_reentry_after_travel() {
+    // test sprzętowy K40 (B4/A15, 2026-11-09): zadanie stawało po pierwszym przejeździe.
+    // Programy przez device.raw: „I…S1E@NSE[I]CV…S1E…FNSE-” — głowica tylko 20 mm, płyta
+    // nie zgłasza końca; jeden segment „I…S1E…FNSE-” — wykonany i zakończony
+    let e = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d = connect(&e, Board::M2);
+    // przejazd do prostokąta dłuższy niż próg jogu w programie
+    let f = egv_file(&rect_doc(20.0, 100.0), Board::M2);
+    assert!(
+        !String::from_utf8_lossy(&f.bytes).contains("@NSE"),
+        "{}",
+        String::from_utf8_lossy(&f.bytes)
+    );
+    d.send_job(&f, JobOptions::default()).unwrap();
+    let j = d.wait_job(Duration::from_secs(5));
+    assert_eq!(j.status, JobStatus::Done, "{j:?}");
+    let t0 = std::time::Instant::now();
+    while e.lock().unwrap().running() && t0.elapsed() < Duration::from_secs(5) {
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    assert!((burn_mm(&e.lock().unwrap().trace) - 100.0).abs() < 0.2);
+    assert!(!e.lock().unwrap().interp.stalled);
+}
+
+#[test]
 fn req_13_048_stop_interrupts_program_buffered_on_m2_nano() {
     // test sprzętowy K40 (B4/A15, 2026-11-09): „Stop” nie zatrzymał prostokąta przy 5 mm/s —
     // cały program był już w płycie, sterownik czekał na koniec zadania (FNSE-), zanim
