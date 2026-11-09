@@ -492,7 +492,7 @@ impl Default for EmuConfig {
 /// rzeczywistego omijają stan BUSY). UNVERIFIED: zachowanie płyty przy pełnym buforze.
 fn realtime(p: &[u8; PAYLOAD]) -> bool {
     let pad = |k: usize| p[k..].iter().all(|b| *b == egv::PAD);
-    (p.starts_with(b"PN") && pad(2)) || (p[0] == b'I' && pad(1)) || pad(0)
+    (p.starts_with(b"PN") && pad(2)) || (p[0] == b'I' && pad(1))
 }
 
 /// Emulator płyty Lihuiyu za interfejsem [`Ch341`].
@@ -570,6 +570,11 @@ impl LihuiyuEmulator {
 
     fn accept(&mut self, data: [u8; PAYLOAD]) {
         self.accepted += 1;
+        if realtime(&data) {
+            // pakiet czasu rzeczywistego: od razu, poza kolejką i porównaniem z poprzednim
+            self.execute(data);
+            return;
+        }
         // Pakiet identyczny z poprzednim płyta potwierdza (OK), ale go nie wykonuje.
         // Zaobserwowane w teście sprzętowym K40 (M2 Nano, 2026-11-09): co drugi z kolejnych
         // jednakowych przejazdów `IRz139S1P` nie ruszał głowicy. UNVERIFIED: przyczyna

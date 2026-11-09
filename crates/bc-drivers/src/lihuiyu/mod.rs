@@ -236,6 +236,8 @@ struct Shared {
     /// Żądanie zatrzymania widoczne od razu w wątku płyty, także gdy czeka on na koniec
     /// zadania albo na potwierdzenie pakietu (test sprzętowy K40, A15).
     stop: AtomicBool,
+    /// Żądana pauza zadania (obsługa także w trakcie czekania na koniec programu).
+    want_pause: AtomicBool,
     queue: Mutex<VecDeque<(Arc<Vec<Packet>>, JobOptions)>>,
     /// Pozycja wg wysłanych pakietów (kroki).
     pos: Mutex<(i64, i64)>,
@@ -272,8 +274,8 @@ struct Io {
     shared: Arc<Shared>,
     track: emu::Interp,
     job: Option<(Arc<Vec<Packet>>, usize, JobOptions, Instant)>,
-    paused: bool,
-    pause_sent: bool,
+    /// Płyta wstrzymana pakietem `PN`.
+    board_paused: bool,
     /// Dane ostatniego potwierdzonego pakietu.
     last_sent: Option<[u8; egv::PAYLOAD]>,
 }
@@ -314,6 +316,26 @@ impl Io {
     /// dziennik `k40_probe` 2026-11-09: wynik po ok. 6 ms, wcześniej BUSY). Odpowiedź liczy
     /// się więc dopiero po BUSY, po zmianie stanu albo po [`SETTLE`] bez zmiany.
     fn send_raw(&mut self, p: &Packet) -> Result<(), DriverError> {
+        self.send_raw_opts(p, false)
+    }
+
+    /// Pakiet czasu rzeczywistego (`I`, `PN`) i dopełnienie po nim, bez czekania na koniec
+    /// stanu BUSY: płyta wstrzymana z pełnym buforem zgłasza BUSY do wznowienia.
+    /// Źródło: MeerK40t `controller.py` (pakiety czasu rzeczywistego omijają BUSY).
+    fn send_realtime(&mut self, text: &[u8]) -> Result<(), DriverError> {
+        self.send_raw_opts(&packet(text), true)?;
+        // dopełnienie bez czekania na odpowiedź: M2 Nano wykonuje pakiet po następnym,
+        // a wstrzymana płyta z pełnym buforem nie przyjmie dopełnienia do wznowienia
+        let fill = egv::frame(&[egv::PAD; egv::PAYLOAD]);
+        self.dev
+            .write_data(&fill)
+            .map_err(|e| DriverError::Transport(e.0))?;
+        self.last_sent = None;
+        std::thread::sleep(SETTLE);
+        Ok(())
+    }
+
+    fn send_raw_opts(&mut self, p: &Packet, realtime: bool) -> Result<(), DriverError> {
         let frame = egv::frame(&p.data);
         let text = String::from_utf8_lossy(&p.data)
             .trim_end_matches('F')
@@ -323,7 +345,7 @@ impl Io {
             // przed zapisem: płyta nie może być zajęta poprzednim pakietem
             let mut before = self.status()?;
             let mut n = 0;
-            while before == egv::STATUS_BUSY {
+            while before == egv::STATUS_BUSY && !realtime {
                 n += 1;
                 if n > POLLS {
                     return Err(DriverError::Timeout("płyta stale zajęta (BUSY)".into()));
@@ -409,8 +431,35 @@ impl Io {
             if self.shared.stop.load(Ordering::SeqCst) {
                 return Ok(());
             }
+            // pauza i wznowienie w trakcie programu (koniec pakietu z „-” — granica bezpieczna)
+            self.sync_pause();
             std::thread::sleep(Duration::from_millis(2));
         }
+    }
+
+    /// Wysyła `PN`, gdy żądany stan pauzy różni się od stanu płyty. Test sprzętowy K40
+    /// (2026-11-09): pauza obsługiwana dopiero po końcu programu nie działała.
+    /// UNVERIFIED: `PN` wstrzymuje i wznawia płytę w trakcie programu (MeerK40t driver.py).
+    fn sync_pause(&mut self) {
+        let want = self.shared.want_pause.load(Ordering::SeqCst);
+        if want == self.board_paused {
+            return;
+        }
+        if let Err(e) = self.send_realtime(b"PN") {
+            self.shared.log(format!("! pauza: {e}"));
+            return;
+        }
+        self.board_paused = want;
+        let mut j = self.shared.job.lock().expect("zadanie");
+        if matches!(j.status, JobStatus::Running | JobStatus::Paused) {
+            j.status = if want {
+                JobStatus::Paused
+            } else {
+                JobStatus::Running
+            };
+        }
+        drop(j);
+        self.set_state(if want { RunState::Hold } else { RunState::Run });
     }
 
     fn set_state(&self, s: RunState) {
@@ -432,13 +481,13 @@ impl Io {
             };
         }
         self.job = Some((p, 0, o, Instant::now()));
-        self.paused = false;
-        self.pause_sent = false;
+        self.shared.want_pause.store(false, Ordering::SeqCst);
         self.set_state(RunState::Run);
     }
 
     fn end_job(&mut self, st: JobStatus) {
         self.job = None;
+        self.shared.want_pause.store(false, Ordering::SeqCst);
         self.shared.job.lock().expect("zadanie").status = st.clone();
         self.set_state(RunState::Idle);
         let next = self.shared.queue.lock().expect("kolejka").pop_front();
@@ -456,17 +505,14 @@ impl Io {
         let Some((p, i, o, t0)) = self.job.take() else {
             return;
         };
-        if self.paused {
-            if !self.pause_sent && self.safe_boundary_of(&p, i) {
-                // UNVERIFIED: „PN” wstrzymuje płytę (MeerK40t driver.py: pauza)
-                let _ = self.send(&packet(b"PN")).and_then(|_| self.push_through());
-                self.pause_sent = true;
-            }
-            if self.pause_sent {
-                self.job = Some((p, i, o, t0));
-                std::thread::sleep(Duration::from_millis(2));
-                return;
-            }
+        // pakiet „PN” tylko na granicy, która nie rozcina liczby
+        if self.safe_boundary_of(&p, i) {
+            self.sync_pause();
+        }
+        if self.board_paused {
+            self.job = Some((p, i, o, t0));
+            std::thread::sleep(Duration::from_millis(2));
+            return;
         }
         if i >= p.len() {
             let mut j = self.shared.job.lock().expect("zadanie");
@@ -527,13 +573,11 @@ impl Io {
             self.shared.job.lock().expect("zadanie").status = JobStatus::Stopped;
         }
         self.job = None;
-        self.paused = false;
-        self.pause_sent = false;
+        // „I” zdejmuje też pauzę płyty
+        self.shared.want_pause.store(false, Ordering::SeqCst);
+        self.board_paused = false;
         self.shared.queue.lock().expect("kolejka").clear();
-        if let Err(e) = self
-            .send_raw(&packet(b"I"))
-            .and_then(|_| self.push_through())
-        {
+        if let Err(e) = self.send_realtime(b"I") {
             self.shared.log(format!("! stop: {e}"));
         }
         self.set_state(RunState::Idle);
@@ -551,7 +595,7 @@ impl Io {
 
     fn run(mut self, rx: mpsc::Receiver<Cmd>) {
         loop {
-            let busy = self.job.is_some() && !(self.paused && self.pause_sent);
+            let busy = self.job.is_some() && !self.board_paused;
             let cmd = if busy {
                 rx.try_recv().ok()
             } else {
@@ -577,27 +621,8 @@ impl Io {
                     let _ = reply.send(r);
                 }
                 Some(Cmd::Job(p, o, id)) => self.start_job(p, o, id),
-                Some(Cmd::Pause) => {
-                    if self.job.is_some() {
-                        self.paused = true;
-                        self.pause_sent = false;
-                        self.set_state(RunState::Hold);
-                        self.shared.job.lock().expect("zadanie").status = JobStatus::Paused;
-                    }
-                }
-                Some(Cmd::Resume) => {
-                    if self.paused {
-                        if self.pause_sent {
-                            let _ = self.send(&packet(b"PN")).and_then(|_| self.push_through());
-                        }
-                        self.paused = false;
-                        self.pause_sent = false;
-                        self.set_state(RunState::Run);
-                        self.shared.job.lock().expect("zadanie").status = JobStatus::Running;
-                    }
-                }
-                // zatrzymanie obsługuje flaga `stop` poniżej
-                Some(Cmd::Stop) | None => {}
+                // pauzę obsługuje `want_pause` (sync_pause), zatrzymanie flaga `stop` poniżej
+                Some(Cmd::Pause) | Some(Cmd::Resume) | Some(Cmd::Stop) | None => {}
             }
             if self.shared.stop.swap(false, Ordering::SeqCst) {
                 self.do_stop();
@@ -649,6 +674,7 @@ impl LihuiyuDriver {
             console: Mutex::new(VecDeque::new()),
             alive: AtomicBool::new(true),
             stop: AtomicBool::new(false),
+            want_pause: AtomicBool::new(false),
             queue: Mutex::new(VecDeque::new()),
             pos: Mutex::new((0, 0)),
         });
@@ -688,8 +714,7 @@ impl LihuiyuDriver {
             shared: shared.clone(),
             track: emu::Interp::new(opts.settings.board),
             job: None,
-            paused: false,
-            pause_sent: false,
+            board_paused: false,
             last_sent: None,
         };
         let thread = std::thread::spawn(move || io.run(rx));
@@ -962,6 +987,9 @@ impl Driver for LihuiyuDriver {
 
     fn pause(&mut self) -> Result<(), DriverError> {
         self.alive()?;
+        if self.job().status == JobStatus::Running {
+            self.shared.want_pause.store(true, Ordering::SeqCst);
+        }
         self.tx
             .send(Cmd::Pause)
             .map_err(|_| DriverError::NotConnected)
@@ -969,6 +997,7 @@ impl Driver for LihuiyuDriver {
 
     fn resume(&mut self) -> Result<(), DriverError> {
         self.alive()?;
+        self.shared.want_pause.store(false, Ordering::SeqCst);
         self.tx
             .send(Cmd::Resume)
             .map_err(|_| DriverError::NotConnected)
