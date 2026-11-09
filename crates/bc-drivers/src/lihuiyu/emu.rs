@@ -554,6 +554,8 @@ pub struct LihuiyuEmulator {
     pub power: Option<f64>,
     /// Psuje sumę CRC kolejnych `n` pakietów (test ponowień).
     pub corrupt_next: usize,
+    /// Kabel USB odłączony: transfery kończą się błędem (płyta wykonuje dalej bufor).
+    pub unplugged: bool,
     /// Zapisy adresu EPP (Lihuiyu ich nie używa).
     pub addr_writes: usize,
     /// Pakiety pominięte jako powtórzenie poprzedniego.
@@ -588,6 +590,7 @@ impl LihuiyuEmulator {
             serial_ok: false,
             power: None,
             corrupt_next: 0,
+            unplugged: false,
             addr_writes: 0,
             duplicates: 0,
             last_payload: None,
@@ -841,6 +844,9 @@ pub fn trace_job(trace: &[EgvMove], st: &Steps) -> bc_plan::Job {
 impl Ch341 for LihuiyuEmulator {
     fn write_data(&mut self, data: &[u8]) -> Result<(), TransportError> {
         self.tick();
+        if self.unplugged {
+            return Err(TransportError("USB: endpoint stalled".into()));
+        }
         if self.cfg.m2_nano_timing {
             let last = self.last_status;
             if !self.script.is_empty() {
@@ -907,6 +913,9 @@ impl Ch341 for LihuiyuEmulator {
 
     fn status(&mut self) -> Result<[u8; 6], TransportError> {
         self.tick();
+        if self.unplugged {
+            return Err(TransportError("USB: endpoint stalled".into()));
+        }
         if self.cfg.m2_nano_timing {
             let code = if let Some(s) = self.script.pop_front() {
                 s

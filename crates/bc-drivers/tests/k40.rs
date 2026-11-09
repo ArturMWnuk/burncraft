@@ -686,6 +686,36 @@ fn req_13_041_m2_nano_program_reentry_after_travel() {
 }
 
 #[test]
+fn req_13_049_usb_unplug_marks_disconnected() {
+    // test sprzętowy K40 (B4/A18, 2026-11-09): po odłączeniu kabla w trakcie zadania
+    // „zadanie przerwane błędem”, ale stan nie był „rozłączony” — po podłączeniu „Połącz”
+    // nie działało bez „Rozłącz” (machines.connect łączy ponownie tylko rozłączone)
+    let e = LihuiyuEmulator::shared(EmuConfig {
+        board: Board::M2,
+        speed: 1.0,
+        m2_nano_timing: true,
+        ..Default::default()
+    });
+    let mut d = connect(&e, Board::M2);
+    let f = egv_file(&rect_doc(10.0, 100.0), Board::M2);
+    d.send_job(&f, JobOptions::default()).unwrap();
+    std::thread::sleep(Duration::from_millis(500));
+    e.lock().unwrap().unplugged = true;
+    let t0 = std::time::Instant::now();
+    while d.status().state != bc_drivers::driver::RunState::Disconnected {
+        assert!(
+            t0.elapsed() < Duration::from_secs(3),
+            "stan po odłączeniu: {:?}, zadanie {:?}",
+            d.status().state,
+            d.job().status
+        );
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    assert_eq!(d.job().status, JobStatus::Failed);
+    assert!(d.console().iter().any(|l| l.contains("endpoint stalled")));
+}
+
+#[test]
 fn req_13_041_m2_nano_last_moves_before_finish() {
     // test sprzętowy K40 (2026-11-09): prostokąt bez ostatniego boku. Programy przez
     // device.raw (20 mm = zzz022): E „B…R…FNSE-” — tylko w prawo; J „B…R…B…FNSE-” — tylko
