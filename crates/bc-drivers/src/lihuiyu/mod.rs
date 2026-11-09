@@ -260,6 +260,9 @@ pub struct LihuiyuDriver {
 }
 
 const POLLS: usize = 500;
+/// Czas, po którym niezmieniony stan po zapisie uznajemy za odpowiedź płyty (pakiet
+/// identyczny z poprzednim: bez BUSY). Test K40: wynik po ok. 6 ms.
+const SETTLE: Duration = Duration::from_millis(30);
 
 struct Io {
     dev: Box<dyn Ch341>,
@@ -268,6 +271,8 @@ struct Io {
     job: Option<(Arc<Vec<Packet>>, usize, JobOptions, Instant)>,
     paused: bool,
     pause_sent: bool,
+    /// Dane ostatniego potwierdzonego pakietu.
+    last_sent: Option<[u8; egv::PAYLOAD]>,
 }
 
 impl Io {
@@ -276,19 +281,67 @@ impl Io {
         Ok(s[1])
     }
 
-    /// Wysyła pakiet i czeka na potwierdzenie (ponowienie po błędzie CRC).
+    /// Wysyła pakiet; pakiet identyczny z poprzednim poprzedza pakiet samego dopełnienia.
+    /// Płyta potwierdza, ale pomija pakiet taki sam jak poprzedni (test sprzętowy K40,
+    /// M2 Nano, 2026-11-09: co drugi jednakowy jog). Dopełnienie `F` między pakietami jest
+    /// bezpieczne jak pakiet czasu rzeczywistego, o ile nie rozcina liczby.
     fn send(&mut self, p: &Packet) -> Result<(), DriverError> {
+        let filler = [egv::PAD; egv::PAYLOAD];
+        if self.last_sent == Some(p.data) && p.data != filler {
+            let last = p
+                .data
+                .iter()
+                .rposition(|b| *b != egv::PAD)
+                .map(|k| p.data[k]);
+            let splits_number =
+                last.is_some_and(|b| b.is_ascii_digit() || b == b'|') && p.data[0].is_ascii_digit();
+            if !splits_number {
+                self.send_raw(&Packet {
+                    data: filler,
+                    wait_finish: false,
+                })?;
+            }
+        }
+        self.send_raw(p)
+    }
+
+    /// Wysyła pakiet i czeka na potwierdzenie (ponowienie po błędzie CRC).
+    ///
+    /// Odczyt stanu tuż po zapisie zwraca stan sprzed zapisu (test sprzętowy K40, M2 Nano,
+    /// dziennik `k40_probe` 2026-11-09: wynik po ok. 6 ms, wcześniej BUSY). Odpowiedź liczy
+    /// się więc dopiero po BUSY, po zmianie stanu albo po [`SETTLE`] bez zmiany.
+    fn send_raw(&mut self, p: &Packet) -> Result<(), DriverError> {
         let frame = egv::frame(&p.data);
         let text = String::from_utf8_lossy(&p.data)
             .trim_end_matches('F')
             .to_string();
         let mut resends = 0;
         'send: loop {
+            // przed zapisem: płyta nie może być zajęta poprzednim pakietem
+            let mut before = self.status()?;
+            let mut n = 0;
+            while before == egv::STATUS_BUSY {
+                n += 1;
+                if n > POLLS {
+                    return Err(DriverError::Timeout("płyta stale zajęta (BUSY)".into()));
+                }
+                std::thread::sleep(Duration::from_millis(2));
+                before = self.status()?;
+            }
             self.dev
                 .write_data(&frame)
                 .map_err(|e| DriverError::Transport(e.0))?;
+            let written = Instant::now();
+            let mut fresh = false;
             for i in 0..POLLS {
                 let s = self.status()?;
+                if !fresh {
+                    fresh = s == egv::STATUS_BUSY || s != before || written.elapsed() >= SETTLE;
+                    if !fresh {
+                        std::thread::sleep(Duration::from_millis(1));
+                        continue;
+                    }
+                }
                 match s {
                     egv::STATUS_OK => {
                         self.shared.log(format!("> {text}"));
@@ -316,13 +369,25 @@ impl Io {
             }
             return Err(DriverError::Timeout("brak potwierdzenia pakietu".into()));
         }
+        self.last_sent = Some(p.data);
         self.track.feed(&p.data);
         self.track.moves.clear();
         *self.shared.pos.lock().expect("pozycja") = self.track.pos;
         if p.wait_finish {
+            self.push_through()?;
             self.wait_finish()?;
         }
         Ok(())
+    }
+
+    /// Pakiet dopełnienia po ostatnim pakiecie polecenia: płyta M2 Nano wykonuje przyjęty
+    /// pakiet dopiero po przyjęciu następnego (test sprzętowy K40, dziennik `k40_probe`
+    /// 2026-11-09). Dopełnienie `F` nie zmienia stanu płyty.
+    fn push_through(&mut self) -> Result<(), DriverError> {
+        self.send_raw(&Packet {
+            data: [egv::PAD; egv::PAYLOAD],
+            wait_finish: false,
+        })
     }
 
     /// Czeka, aż płyta skończy (bit 0x02 stanu zgaszony: FINISH 236 / 204).
@@ -391,7 +456,7 @@ impl Io {
         if self.paused {
             if !self.pause_sent && self.safe_boundary_of(&p, i) {
                 // UNVERIFIED: „PN” wstrzymuje płytę (MeerK40t driver.py: pauza)
-                let _ = self.send(&packet(b"PN"));
+                let _ = self.send(&packet(b"PN")).and_then(|_| self.push_through());
                 self.pause_sent = true;
             }
             if self.pause_sent {
@@ -486,6 +551,9 @@ impl Io {
                             break;
                         }
                     }
+                    if r.is_ok() && ps.last().is_some_and(|p| !p.wait_finish) {
+                        r = self.push_through();
+                    }
                     let _ = reply.send(r);
                 }
                 Some(Cmd::Job(p, o, id)) => self.start_job(p, o, id),
@@ -500,7 +568,7 @@ impl Io {
                 Some(Cmd::Resume) => {
                     if self.paused {
                         if self.pause_sent {
-                            let _ = self.send(&packet(b"PN"));
+                            let _ = self.send(&packet(b"PN")).and_then(|_| self.push_through());
                         }
                         self.paused = false;
                         self.pause_sent = false;
@@ -604,6 +672,7 @@ impl LihuiyuDriver {
             job: None,
             paused: false,
             pause_sent: false,
+            last_sent: None,
         };
         let thread = std::thread::spawn(move || io.run(rx));
         Ok(LihuiyuDriver {

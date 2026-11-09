@@ -183,12 +183,22 @@ fn req_13_041_m2_nano_stale_status_and_late_execution() {
     for i in 1..=4 {
         d.jog(Axis::X, 10.0, 50.0).unwrap();
         let g = e.lock().unwrap();
-        assert_eq!(g.pos().0 - start.0, i * steps(10.0), "jog {i}: {:?}", g.trace);
+        assert_eq!(
+            g.pos().0 - start.0,
+            i * steps(10.0),
+            "jog {i}: {:?}",
+            g.trace
+        );
     }
     for i in 1..=2 {
         d.jog(Axis::Y, -10.0, 50.0).unwrap();
         let g = e.lock().unwrap();
-        assert_eq!(g.pos().1 - start.1, i * steps(10.0), "jog Y {i}: {:?}", g.trace);
+        assert_eq!(
+            g.pos().1 - start.1,
+            i * steps(10.0),
+            "jog Y {i}: {:?}",
+            g.trace
+        );
     }
     d.home().unwrap();
     assert_eq!(e.lock().unwrap().interp.homes, 1);
@@ -198,7 +208,11 @@ fn req_13_041_m2_nano_stale_status_and_late_execution() {
     let f = egv_file(&rect_doc(20.0, 100.0), Board::M2);
     assert_eq!(run(&mut d, &f), JobStatus::Done);
     let g = e.lock().unwrap();
-    assert!((burn_mm(&g.trace) - 100.0).abs() < 0.5, "{}", burn_mm(&g.trace));
+    assert!(
+        (burn_mm(&g.trace) - 100.0).abs() < 0.5,
+        "{}",
+        burn_mm(&g.trace)
+    );
     assert_eq!(g.collisions, 0);
     assert_eq!(g.duplicates, 0);
 }
@@ -685,7 +699,8 @@ fn req_13_039_ch341_native_usb() {
     assert_eq!(d.job().status, JobStatus::Done);
     // ramki 0xA6 dekodowane przez urządzenie USB, inicjalizacja EPP żądaniem 0xB1
     let g = e.lock().unwrap();
-    assert_eq!(g.accepted, egv::packets(&f.bytes).len());
+    // + pakiet dopełnienia po ostatnim (płyta M2 Nano wykonuje pakiet po następnym)
+    assert_eq!(g.accepted, egv::packets(&f.bytes).len() + 1);
     assert!((burn_mm(&g.trace) - 100.0).abs() < 0.2);
 }
 

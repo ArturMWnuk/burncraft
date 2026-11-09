@@ -553,9 +553,8 @@ impl LihuiyuEmulator {
         self.last_payload = Some(data);
         if self.cfg.m2_nano_timing {
             // wykonanie poprzedniego przyjętego pakietu, ten czeka na następny
-            match self.held.replace(data) {
-                Some(h) => self.execute(h),
-                None => return,
+            if let Some(h) = self.held.replace(data) {
+                self.execute(h);
             }
         } else {
             self.execute(data);

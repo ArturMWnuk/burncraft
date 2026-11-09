@@ -745,7 +745,7 @@
 | REQ-13-038 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_038_board_6c6879_laser_m2_m3` |  |
 | REQ-13-039 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_039_ch341_native_usb`<br>`web/e2e/k40.spec.ts::req_13_039_add_k40_from_usb_finder` |  |
 | REQ-13-040 | M3 | in_progress | `crates/bc-drivers/tests/k40.rs::req_13_040_ch341_dll_runtime_loading` | docs/procedures/M3-hardware-k40.md |
-| REQ-13-041 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_041_egv_packets_30_bytes_crc8` |  |
+| REQ-13-041 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_041_egv_packets_30_bytes_crc8`<br>`crates/bc-drivers/tests/k40.rs::req_13_041_identical_consecutive_packets_all_executed`<br>`crates/bc-drivers/tests/k40.rs::req_13_041_m2_nano_stale_status_and_late_execution` |  |
 | REQ-13-042 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_042_status_ok_busy_crc_task_complete` |  |
 | REQ-13-043 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_043_speed_code_known_value_m2`<br>`crates/bc-drivers/tests/k40.rs::req_13_043_direction_step_commands` |  |
 | REQ-13-044 | M3 | verified | `crates/bc-drivers/tests/k40.rs::req_13_044_native_raster_step_mode` |  |
