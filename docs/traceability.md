@@ -179,7 +179,7 @@
 | REQ-02-111 | M6 | todo |  |  |
 | REQ-03-001 | M1 | verified | `web/e2e/app.spec.ts::req_01_022_and_req_03_001_002_003_017_and_req_19_013_webgl2_workspace` | docs/procedures/M1-gui-checks.md |
 | REQ-03-002 | M1 | verified | `web/e2e/app.spec.ts::req_01_022_and_req_03_001_002_003_017_and_req_19_013_webgl2_workspace` | docs/procedures/M1-gui-checks.md |
-| REQ-03-003 | M1 | verified | `web/e2e/app.spec.ts::req_01_022_and_req_03_001_002_003_017_and_req_19_013_webgl2_workspace` | docs/procedures/M1-gui-checks.md |
+| REQ-03-003 | M1 | verified | `crates/bc-commands/tests/k40_commands.rs::req_03_003_connect_sets_document_workspace_from_profile`<br>`web/e2e/app.spec.ts::req_01_022_and_req_03_001_002_003_017_and_req_19_013_webgl2_workspace` | docs/procedures/M1-gui-checks.md |
 | REQ-03-004 | M2 | verified | `crates/bc-commands/tests/m25_commands.rs::req_03_004_machine_status_head_in_document_coordinates`<br>`web/e2e/machine.spec.ts::req_03_004_head_position_on_workspace` | docs/procedures/M2-gui-checks.md |
 | REQ-03-005 | M5 | todo |  |  |
 | REQ-03-006 | M1 | verified | `web/e2e/tools.spec.ts::req_03_006_to_010_snapping_grid_nodes_midpoints_centers_edges` | docs/procedures/M1-gui-checks.md |

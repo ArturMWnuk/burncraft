@@ -92,16 +92,16 @@ Szczegóły `UNVERIFIED` z ADR 0014 i punkty, które je sprawdzają:
 
 ## Wyniki
 
-Do uzupełnienia po teście.
+Test w toku (wpisy uzupełniane na bieżąco).
 
-- Data testu:
-- Płyta (naklejka), ID:
-- Sterownik CH341 przed testem:
-- Wersja BurnCraft (commit):
+- Data testu: 2026-11-09
+- Płyta (naklejka), ID: Lihuiyu M2 Nano
+- Sterownik CH341 przed testem: brak (Menedżer urządzeń: „Nieznane urządzenie”)
+- Wersja BurnCraft (commit): cc33cfc (A1, B2–B3), 808d804 (B4: jog), poprawka obszaru po ccacf63 (B4: A5)
 
 | # | Wynik | Uwagi |
 |---|---|---|
-| A1 | | |
+| A1 | nie, poprawione | K40 bez sterownika nie był widoczny w „Znajdź mój laser” (Windows: nusb pomija urządzenia bez sterownika); poprawka dbd6986/cc33cfc — wiersz K40 ze stanem „brak sterownika WinUSB”; dalej część B (A2–A18 pominięte: brak sterownika producenta) |
 | A2 | | |
 | A3 | | |
 | A4 | | |
@@ -120,8 +120,8 @@ Do uzupełnienia po teście.
 | A17 | | |
 | A18 | | |
 | B1 | | |
-| B2 | | |
-| B3 | | |
-| B4 | | |
-| B5 | | |
+| B2 | tak | po Zadig (WinUSB) K40 ze stanem „gotowe” |
+| B3 | tak | profil USB `1A86:5512`, stan „gotowy” |
+| B4 | w toku | A5: bazowanie do lewego górnego narożnika — tak; krzyżyk na kanwie w połowie wysokości (dokument 400×400 mm przy stole 310×210 mm) — poprawka ccacf63 + green. A6: kierunki i odległości 10 mm — tak; pierwszy / co drugi jog nie ruszał głowicy — dziennik `k40_probe`: stan tuż po zapisie jest stanem sprzed zapisu, płyta wykonuje pakiet dopiero po następnym i pomija pakiet identyczny z poprzednim; poprawki b28a13d, 938b51b/808d804 — po poprawce każde kliknięcie rusza głowicę |
+| B5 | tak | wersja CH341: 50 (żądanie 0x5F, dziennik `k40_probe`) |
 | B6 | | |

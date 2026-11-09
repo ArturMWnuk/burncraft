@@ -276,7 +276,21 @@ fn machine_connect(s: &mut Session, p: Value) -> Result<Value, CmdError> {
         capabilities: d.capabilities(),
         state: st.state,
     };
+    let ws = m
+        .connected_profile(&p.name)
+        .cloned()
+        .or_else(|| m.profile(&p.name))
+        .map(|p| p.workspace);
     drop(m);
+    // obszar dokumentu = stół podłączonej maszyny (REQ-03-003; test sprzętowy K40 B4/A5:
+    // dokument 400×400 przy stole 310×210 przesuwał krzyżyk głowicy na kanwie)
+    if let Some([w, h]) = ws.filter(|w| w[0] > 0.0 && w[1] > 0.0) {
+        if s.doc.workspace.width != w || s.doc.workspace.height != h {
+            s.doc.workspace.width = w;
+            s.doc.workspace.height = h;
+            s.touch();
+        }
+    }
     s.device = Some(p.name);
     ok(r)
 }
