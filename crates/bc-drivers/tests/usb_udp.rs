@@ -292,3 +292,124 @@ fn req_13_021_linux_permission_guide() {
     let g = driver_guide(&dev(0x1A86, 0x5512, UsbAccess::Ready), "macos");
     assert!(g.ok);
 }
+
+// ---------- Windows: urządzenie bez sterownika (test sprzętowy K40, A1) ----------
+
+fn pnp(id: &str, service: Option<&str>) -> PnpUsbDevice {
+    PnpUsbDevice {
+        instance_id: id.into(),
+        service: service.map(str::to_string),
+    }
+}
+
+#[test]
+fn req_13_193_windows_instance_id_parsed() {
+    assert_eq!(
+        parse_usb_instance_id(r"USB\VID_1A86&PID_5512\6&2A8B8C9B&0&2"),
+        Some((0x1A86, 0x5512))
+    );
+    assert_eq!(
+        parse_usb_instance_id(r"usb\vid_9588&pid_9899\5&1"),
+        Some((0x9588, 0x9899))
+    );
+    // interfejs urządzenia złożonego, koncentrator główny, inne magistrale
+    assert_eq!(
+        parse_usb_instance_id(r"USB\VID_1BCF&PID_2A06&MI_00\7&8DFEA90&0&0000"),
+        None
+    );
+    assert_eq!(parse_usb_instance_id(r"USB\ROOT_HUB30\4&1"), None);
+    assert_eq!(parse_usb_instance_id(r"ACPI\AMDI0080\1"), None);
+    assert_eq!(parse_usb_instance_id(r"USB\VID_ZZZZ&PID_5512\1"), None);
+}
+
+#[test]
+fn req_13_193_driverless_laser_listed_on_windows() {
+    // K40 „Nieznane urządzenie” (bez sterownika): nusb go nie zwraca
+    let mut list = Vec::new();
+    add_unlisted_devices(
+        &mut list,
+        &[
+            pnp(r"USB\VID_1A86&PID_5512\6&2A8B8C9B&0&2", None),
+            pnp(r"USB\VID_1BCF&PID_2A06&MI_00\7&8DFEA90&0&0000", None),
+            pnp(r"USB\VID_046D&PID_C077\5&3", None),
+        ],
+    );
+    assert_eq!(list.len(), 1, "{list:?}");
+    assert_eq!((list[0].vid, list[0].pid), (0x1A86, 0x5512));
+    assert_eq!(list[0].driver, None);
+    assert_eq!(list[0].access, UsbAccess::DriverMissing);
+    // przewodnik WinUSB dla tego urządzenia
+    let g = driver_guide(&list[0], "windows");
+    assert!(!g.ok && g.kind == "winusb", "{g:?}");
+
+    // urządzenie już na liście nusb (WinUSB): bez duplikatu
+    let mut list = vec![dev(0x1A86, 0x5512, UsbAccess::Ready)];
+    add_unlisted_devices(
+        &mut list,
+        &[pnp(r"USB\VID_1A86&PID_5512\6&1", Some("WinUSB"))],
+    );
+    assert_eq!(list.len(), 1);
+    assert_eq!(list[0].access, UsbAccess::Ready);
+
+    // dwa K40, nusb widzi jeden: dopisany drugi; sterownik producenta z usługi
+    let mut list = vec![dev(0x1A86, 0x5512, UsbAccess::Ready)];
+    add_unlisted_devices(
+        &mut list,
+        &[
+            pnp(r"USB\VID_1A86&PID_5512\6&1", Some("WinUSB")),
+            pnp(r"USB\VID_1A86&PID_5512\6&2", Some("CH341PAR")),
+        ],
+    );
+    assert_eq!(list.len(), 2);
+    assert_eq!(
+        list[1].access,
+        UsbAccess::VendorDriver {
+            driver: "CH341PAR".into()
+        }
+    );
+}
+
+#[test]
+fn req_13_193_driverless_laser_found_by_wizard() {
+    // kreator „Znajdź mój laser” na urządzeniu z listy uzupełnionej z PnP
+    struct O(Arc<FakeUsb>);
+    impl Opener for O {
+        fn open(&self, spec: &TransportSpec) -> Result<Box<dyn Transport>, TransportError> {
+            open_spec(self, spec)
+        }
+        fn ports(&self) -> Vec<PortInfo> {
+            Vec::new()
+        }
+        fn usb(&self) -> Arc<dyn UsbBackend> {
+            self.0.clone()
+        }
+    }
+    let mut devices = Vec::new();
+    add_unlisted_devices(
+        &mut devices,
+        &[pnp(r"USB\VID_1A86&PID_5512\6&2A8B8C9B&0&2", None)],
+    );
+    let usb = Arc::new(FakeUsb { devices });
+    let m = Machines::new(Arc::new(O(usb.clone())));
+    let found = m.find_usb();
+    assert_eq!(found.len(), 1, "{found:?}");
+    assert_eq!(found[0].family.unwrap().id, "ch341_k40");
+    assert_eq!(found[0].device.access, UsbAccess::DriverMissing);
+    // otwarcie: komunikat o brakującym sterowniku zamiast „nie znaleziono”
+    let e = UsbTransport::open(usb.as_ref(), &UsbSelector::for_device(0x1A86, 0x5512, None))
+        .err()
+        .expect("bez sterownika");
+    assert!(e.0.contains("brak sterownika"), "{}", e.0);
+}
+
+#[cfg(windows)]
+#[test]
+fn req_13_193_windows_pnp_enumeration_runs() {
+    // prawdziwy menedżer urządzeń: tylko urządzenia USB (bez interfejsów &MI_)
+    for d in windows_pnp_usb_devices() {
+        assert!(
+            d.instance_id.to_ascii_uppercase().starts_with(r"USB\"),
+            "{d:?}"
+        );
+    }
+}

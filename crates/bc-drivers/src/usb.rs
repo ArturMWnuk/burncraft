@@ -258,6 +258,38 @@ impl Transport for UsbTransport {
     }
 }
 
+// ---------- Windows: urządzenia bez sterownika ----------
+
+/// Urządzenie USB z menedżera urządzeń Windows (identyfikator wystąpienia PnP i usługa
+/// sterownika). `nusb` na Windows nie widzi urządzeń bez sterownika („Nieznane
+/// urządzenie”), więc kreator uzupełnia listę o znane rodziny laserów z tej listy.
+#[derive(Debug, Clone, PartialEq)]
+pub struct PnpUsbDevice {
+    pub instance_id: String,
+    pub service: Option<String>,
+}
+
+/// VID/PID z identyfikatora wystąpienia `USB\VID_xxxx&PID_xxxx\…` (urządzenie, nie
+/// interfejs urządzenia złożonego `&MI_xx`).
+pub fn parse_usb_instance_id(id: &str) -> Option<(u16, u16)> {
+    let _ = id;
+    None
+}
+
+/// Dopisuje do listy `nusb` urządzenia znanych rodzin laserów, których `nusb` nie zwrócił.
+pub fn add_unlisted_devices(list: &mut Vec<UsbDeviceInfo>, pnp: &[PnpUsbDevice]) {
+    let _ = (list, pnp);
+}
+
+/// Obecne urządzenia USB z menedżera urządzeń Windows (cfgmgr32), także bez sterownika.
+#[cfg(windows)]
+pub fn windows_pnp_usb_devices() -> Vec<PnpUsbDevice> {
+    vec![PnpUsbDevice {
+        instance_id: String::new(),
+        service: None,
+    }]
+}
+
 // ---------- nusb ----------
 
 /// USB systemu przez `nusb`.
